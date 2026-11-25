@@ -99,6 +99,33 @@
       color: #ffffff;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
+
+    /* Native Mobile Date & Time Input Sizing Fix */
+    input[type="date"],
+    input[type="time"] {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="date"]::-webkit-date-and-time-value,
+    input[type="time"]::-webkit-date-and-time-value {
+      text-align: left;
+      margin: 0;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      margin-left: 2px;
+      padding: 0;
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+      opacity: 0.75;
+    }
   </style>
 </head>
 <body class="bg-[#070709] text-zinc-100 antialiased min-h-screen flex items-center justify-center sm:p-4 selection:bg-rose-500/30 selection:text-rose-200">
@@ -172,7 +199,6 @@
           <span id="session-count-label" class="text-xs font-mono font-semibold text-zinc-200">0</span>
         </div>
 
-        <!-- System Notifications Permission Toggle -->
         <!-- System Notifications Permission Toggle (Colored Icon State) -->
         <button id="notif-toggle-btn" type="button" class="p-2 rounded-xl border border-amber-500/25 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition active:scale-95" title="Tap to enable system notifications" aria-label="Notifications">
           <svg id="icon-notif-bell" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
@@ -181,7 +207,7 @@
         </button>
 
         <!-- Sound Toggle -->
-        <button id="sound-toggle-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Toggle chime sound">
+        <button id="sound-toggle-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Toggle chime sound" aria-label="Toggle sound">
           <svg id="icon-sound-on" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
           </svg>
@@ -192,7 +218,7 @@
         </button>
 
         <!-- Timer Duration Settings Button -->
-        <button id="open-settings-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Configure default timer durations">
+        <button id="open-settings-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Configure default timer durations" aria-label="Settings">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
           </svg>
@@ -303,7 +329,6 @@
 
         <!-- Active Structured Task Card -->
         <div class="bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/[0.08] shrink-0">
-        <div class="bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/[0.08]">
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Active Task</span>
             <button id="switch-to-planner-btn" type="button" class="text-xs font-semibold text-rose-400 hover:text-rose-300">
@@ -312,7 +337,7 @@
           </div>
           <div id="active-task-container" class="flex items-center justify-between gap-2.5">
             <div class="flex items-center gap-2.5 min-w-0 flex-1">
-              <button id="complete-active-task-btn" type="button" class="w-5 h-5 rounded-full border-2 border-zinc-600 hover:border-rose-500 flex items-center justify-center shrink-0 transition" title="Mark entire task complete">
+              <button id="complete-active-task-btn" type="button" class="w-5 h-5 rounded-full border-2 border-zinc-600 hover:border-rose-500 flex items-center justify-center shrink-0 transition" title="Mark entire task complete" aria-label="Mark active task complete">
                 <span class="w-2 h-2 rounded-full bg-transparent"></span>
               </button>
               <div class="min-w-0 flex-1">
@@ -323,7 +348,7 @@
                 </div>
               </div>
             </div>
-            <button id="edit-active-task-btn" type="button" class="hidden p-2 rounded-xl bg-white/[0.06] hover:bg-white/15 text-zinc-300 transition shrink-0" title="Edit task structure">
+            <button id="edit-active-task-btn" type="button" class="hidden p-2 rounded-xl bg-white/[0.06] hover:bg-white/15 text-zinc-300 transition shrink-0" title="Edit task structure" aria-label="Edit active task">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
@@ -420,7 +445,7 @@
             <h3 class="font-heading text-base font-bold text-white">Default Durations & Loop</h3>
             <p class="text-xs text-zinc-400">Base minutes for new blocks & Default Loop</p>
           </div>
-          <button id="close-settings-btn" type="button" class="p-2 rounded-full bg-white/10 text-zinc-400 hover:text-white transition">
+          <button id="close-settings-btn" type="button" class="p-2 rounded-full bg-white/10 text-zinc-400 hover:text-white transition" aria-label="Close settings">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -518,14 +543,14 @@
     </div>
 
     <!-- ==================== MODAL 2: UNIFIED TASK + TIMER STRUCTURE BUILDER ==================== -->
-    <div id="task-modal" class="hidden absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex items-end justify-center">
-      <form id="add-task-form" class="bg-[#141418] w-full rounded-t-3xl p-4 sm:p-5 shadow-2xl border-t border-white/15 max-h-[92%] flex flex-col">
+    <div id="task-modal" class="hidden absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex items-end justify-center overflow-x-hidden">
+      <form id="add-task-form" class="bg-[#141418] w-full max-w-full overflow-x-hidden rounded-t-3xl p-4 sm:p-5 shadow-2xl border-t border-white/15 max-h-[92%] flex flex-col">
         <div class="flex items-center justify-between mb-3 shrink-0">
           <div>
             <h3 id="task-modal-heading" class="font-heading text-base font-bold text-white">Plan Structured Task</h3>
             <p class="text-[11px] text-zinc-400">Organize work, breaks & lunch from start to finish</p>
           </div>
-          <button type="button" id="close-task-modal-btn" class="p-2 rounded-full bg-white/10 text-zinc-400 hover:text-white transition">
+          <button type="button" id="close-task-modal-btn" class="p-2 rounded-full bg-white/10 text-zinc-400 hover:text-white transition" aria-label="Close task modal">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -535,33 +560,33 @@
         <input type="hidden" id="editing-task-id" value="" />
 
         <!-- Scrollable Form Body -->
-        <div class="space-y-3 overflow-y-auto pr-0.5 flex-1">
+        <div class="space-y-3 overflow-y-auto overflow-x-hidden pr-0.5 flex-1">
           <!-- Task Title -->
-          <div>
+          <div class="min-w-0">
             <label for="task-title-input" class="block text-[11px] font-semibold text-zinc-300 mb-1">Task Title / Goal</label>
             <input id="task-title-input" type="text" required placeholder="e.g., Q4 Strategy Deck or Deep Coding Sprint"
-              class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900/90 border border-white/15 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500" />
+              class="w-full min-w-0 px-3.5 py-2.5 rounded-xl bg-zinc-900/90 border border-white/15 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500" />
           </div>
 
           <!-- Date & Optional Reminder Row -->
           <div class="grid grid-cols-2 gap-2.5">
-            <div>
-              <label for="task-date-input" class="block text-[11px] font-semibold text-zinc-300 mb-1">Scheduled Date</label>
+            <div class="min-w-0">
+              <label for="task-date-input" class="block text-[11px] font-semibold text-zinc-300 mb-1 truncate">Scheduled Date</label>
               <input id="task-date-input" type="date" required
-                class="w-full px-3 py-2 rounded-xl bg-zinc-900/90 border border-white/15 text-xs text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
+                class="w-full max-w-full min-w-0 box-border appearance-none px-2.5 py-2 rounded-xl bg-zinc-900/90 border border-white/15 text-[12px] leading-tight text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
             </div>
 
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label for="task-time-input" class="text-[11px] font-semibold text-zinc-300">Reminder</label>
-                <label class="relative inline-flex items-center cursor-pointer">
+            <div class="min-w-0">
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <label for="task-time-input" class="text-[11px] font-semibold text-zinc-300 truncate">Reminder</label>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
                   <input id="task-reminder-toggle" type="checkbox" class="sr-only peer" />
                   <div class="w-7 h-4 bg-zinc-700 rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-rose-500"></div>
                 </label>
               </div>
-              <div id="reminder-time-wrapper" class="opacity-40 pointer-events-none transition">
+              <div id="reminder-time-wrapper" class="min-w-0 opacity-40 pointer-events-none transition">
                 <input id="task-time-input" type="time"
-                  class="w-full px-3 py-2 rounded-xl bg-zinc-900/90 border border-white/15 text-xs font-mono font-semibold text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
+                  class="w-full max-w-full min-w-0 box-border appearance-none px-2.5 py-2 rounded-xl bg-zinc-900/90 border border-white/15 text-[12px] leading-tight font-mono font-semibold text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
               </div>
             </div>
           </div>
@@ -572,11 +597,11 @@
               <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">Timer Structure (Work → Finish)</span>
               <!-- Starter Presets -->
               <div class="flex items-center gap-1">
-                <button type="button" data-preset="classic" class="px-2 py-0.5 rounded-md bg-white/[0.07] hover:bg-white/15 text-[10px] font-semibold text-zinc-300 transition" title="Populate 4x Focus + Short & Long Rest">
-                  4x Pomo
+                <button type="button" data-preset="workday" class="px-2 py-0.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/25 text-[10px] font-semibold text-amber-300 transition" title="Populate 8hr Workday (25/5) + 1hr Lunch">
+                  Workday
                 </button>
-                <button type="button" data-preset="halfday" class="px-2 py-0.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/25 text-[10px] font-semibold text-amber-300 transition" title="Populate Focus + Rest + Lunch + Focus">
-                  + Lunch Day
+                <button type="button" data-preset="fourhr" class="px-2 py-0.5 rounded-md bg-white/[0.07] hover:bg-white/15 border border-white/10 text-[10px] font-semibold text-zinc-300 transition" title="Populate 4hr Half-Day (25/5)">
+                  4hr
                 </button>
               </div>
             </div>
@@ -1001,7 +1026,6 @@
           wakeLockSentinel = null;
         }
 
-        // Also engage ultra-low-gain Web Audio keep-alive for older mobile browsers
         startSilentKeepAliveAudio();
         if (keepAliveOsc) {
           acquired = true;
@@ -1371,7 +1395,7 @@
 
         if (dom.modeBadgeText) {
           dom.modeBadgeText.textContent = cfg.label;
-          dom.modeBadgeText.className = `font-heading text-[10px] font-bold uppercase tracking-widest mb-1 ${cfg.badgeTextClass}`;
+          dom.modeBadgeText.className = `font-heading text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mb-1 ${cfg.badgeTextClass}`;
         }
         if (dom.durationPillLabel) {
           dom.durationPillLabel.textContent = `${Math.max(1, Math.round(state.totalSeconds / 60))} min`;
@@ -1597,7 +1621,7 @@
 
         if (!task) {
           if (dom.activeTaskTitle) {
-            dom.activeTaskTitle.textContent = 'No active structured task — tap All Tasks';
+            dom.activeTaskTitle.textContent = 'No active structured task — tap Schedule';
             dom.activeTaskTitle.classList.add('text-zinc-500');
             dom.activeTaskTitle.classList.remove('text-zinc-100');
           }
@@ -1808,7 +1832,7 @@
 
         const dayTasks = state.tasks.filter((t) => t.date === state.selectedDate);
         if (dom.selectedDateSubtext) {
-          dom.selectedDateSubtext.textContent = `${dayTasks.length} structured ${dayTasks.length === 1 ? 'task' : 'tasks'}`;
+          dom.selectedDateSubtext.textContent = `${dayTasks.length} scheduled ${dayTasks.length === 1 ? 'task' : 'tasks'}`;
         }
 
         if (dayTasks.length === 0) {
@@ -1824,7 +1848,6 @@
         dom.taskListContainer.innerHTML = dayTasks
           .map((task) => {
             const isActiveTask = task.id === state.activeTaskId && !task.completed;
-            const completedBlocks = task.blocks.filter((b) => b.completed).length;
             const totalMins = task.blocks.reduce((sum, b) => sum + (b.duration || 0), 0);
             const totalHoursText = formatTotalHoursLabel(totalMins);
 
@@ -1856,19 +1879,18 @@
                     </div>
                   </div>
 
-                  <!-- Right: Minimalist Run, Edit & Delete Controls -->
+                  <!-- Right: Minimalist Icon-Only Play, Edit & Delete Controls -->
                   <div class="flex items-center gap-1.5 shrink-0">
                     <button type="button" data-action="run-task" data-id="${escapeHTML(task.id)}"
-                      class="h-8 px-2.5 rounded-xl ${
+                      class="w-8 h-8 rounded-full ${
                         task.completed
                           ? 'bg-white/[0.06] hover:bg-white/15 text-zinc-300 border border-white/10'
                           : 'bg-rose-500 hover:bg-rose-600 text-white shadow-sm shadow-rose-500/25'
-                      } text-[11px] font-heading font-bold flex items-center gap-1 transition active:scale-95"
-                      title="${task.completed ? 'Restart task' : completedBlocks > 0 ? 'Resume task' : 'Start task'}">
-                      <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                      } flex items-center justify-center transition active:scale-90 shrink-0"
+                      title="Run Task" aria-label="Run Task">
+                      <svg class="w-3.5 h-3.5 fill-current ml-0.5" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z" />
                       </svg>
-                      <span>${task.completed ? 'Redo' : completedBlocks > 0 ? 'Resume' : 'Run'}</span>
                     </button>
 
                     <div class="flex items-center bg-white/[0.04] border border-white/10 rounded-xl p-0.5">
@@ -2096,27 +2118,73 @@
       }
 
       function applyPresetToDraft(presetKey) {
-        const d = state.durations;
-        if (presetKey === 'classic') {
+        if (presetKey === 'workday') {
           state.modalDraftBlocks = [
-            createBlock('focus', d.focus, 'Session 1'),
-            createBlock('short', d.short, 'Short rest'),
-            createBlock('focus', d.focus, 'Session 2'),
-            createBlock('short', d.short, 'Short rest'),
-            createBlock('focus', d.focus, 'Session 3'),
-            createBlock('short', d.short, 'Short rest'),
-            createBlock('focus', d.focus, 'Session 4'),
-            createBlock('long', d.long, 'Long recovery'),
+            // Morning 4-Hour Block (09:00 - 13:00)
+            createBlock('focus', 25, 'Sprint 1'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 2'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 3'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 15, 'Sprint 4'),
+            createBlock('long', 15, 'Mid-morning recharge'),
+            createBlock('focus', 25, 'Sprint 5'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 6'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 7'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 8'),
+            createBlock('short', 5, 'Transition to lunch'),
+            // Midday Reset (13:00 - 14:00)
+            createBlock('lunch', 60, 'Lunch break'),
+            // Afternoon 4-Hour Block (14:00 - 18:00)
+            createBlock('focus', 25, 'Sprint 9'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 10'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 11'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 15, 'Sprint 12'),
+            createBlock('long', 15, 'Mid-afternoon recharge'),
+            createBlock('focus', 25, 'Sprint 13'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 14'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 15'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 20, 'Sprint 16'),
+            createBlock('long', 10, 'Shutdown ritual'),
           ];
-        } else if (presetKey === 'halfday') {
+          if (dom.taskTitleInput && !dom.taskTitleInput.value.trim()) {
+            dom.taskTitleInput.value = 'Workday';
+          }
+          if (dom.taskTimeInput && !dom.taskTimeInput.value) {
+            dom.taskTimeInput.value = '09:00';
+          }
+        } else if (presetKey === 'fourhr') {
           state.modalDraftBlocks = [
-            createBlock('focus', d.focus, 'Morning block 1'),
-            createBlock('short', d.short, 'Coffee break'),
-            createBlock('focus', d.focus, 'Morning block 2'),
-            createBlock('lunch', d.lunch, 'Lunch break'),
-            createBlock('focus', d.focus, 'Afternoon wrap-up'),
-            createBlock('long', d.long, 'Finish & review'),
+            createBlock('focus', 25, 'Sprint 1'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 2'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 3'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 15, 'Sprint 4'),
+            createBlock('long', 15, 'Mid-block recharge'),
+            createBlock('focus', 25, 'Sprint 5'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 6'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 7'),
+            createBlock('short', 5, 'Short rest'),
+            createBlock('focus', 25, 'Sprint 8'),
+            createBlock('short', 5, 'Wrap-up rest'),
           ];
+          if (dom.taskTitleInput && !dom.taskTitleInput.value.trim()) {
+            dom.taskTitleInput.value = '4hr Focus Block';
+          }
         }
         renderModalBlocksList();
       }
@@ -2124,21 +2192,38 @@
       // =========================================================================
       // 12. REMINDER CHECKER LOOP
       // =========================================================================
+      function checkScheduledReminders() {
+        const today = getTodayStr();
+        const currentTime = getCurrentHHMM();
+
+        state.tasks.forEach((task) => {
+          if (
+            task.date === today &&
+            task.reminderEnabled &&
+            !task.completed &&
+            !task.reminded &&
+            task.reminderTime === currentTime
+          ) {
+            task.reminded = true;
+            saveJSON(STORAGE_KEYS.TASKS, state.tasks);
+            showReminderBanner(task);
+          }
+        });
+      }
+
       function showReminderBanner(task) {
         if (!dom.reminderBanner) return;
         state.activeBannerTaskId = task.id;
         if (dom.reminderBannerTime) dom.reminderBannerTime.textContent = task.reminderTime;
         if (dom.reminderBannerTitle) dom.reminderBannerTitle.textContent = task.title;
-        dom.reminderBanner.classList.remove('hidden');
 
+        dom.reminderBanner.classList.remove('hidden');
         requestAnimationFrame(() => {
-          if (!dom.reminderBanner) return;
           dom.reminderBanner.classList.remove('-translate-y-4', 'opacity-0');
           dom.reminderBanner.classList.add('translate-y-0', 'opacity-100');
         });
-
         playChime('reminder');
-        sendSystemNotification('FocusFlow Scheduled Task', `${task.title} (${task.reminderTime})`);
+        sendSystemNotification(`Reminder (${task.reminderTime})`, task.title);
       }
 
       function hideReminderBanner() {
@@ -2147,36 +2232,12 @@
         dom.reminderBanner.classList.remove('translate-y-0', 'opacity-100');
         setTimeout(() => {
           if (dom.reminderBanner) dom.reminderBanner.classList.add('hidden');
-        }, 280);
-      }
-
-      function checkDueReminders() {
-        const today = getTodayStr();
-        const currentHHMM = getCurrentHHMM();
-        let updated = false;
-
-        state.tasks.forEach((task) => {
-          if (
-            task &&
-            !task.completed &&
-            task.reminderEnabled &&
-            !task.reminded &&
-            task.date === today &&
-            task.reminderTime === currentHHMM
-          ) {
-            task.reminded = true;
-            updated = true;
-            showReminderBanner(task);
-          }
-        });
-
-        if (updated) {
-          saveJSON(STORAGE_KEYS.TASKS, state.tasks);
-        }
+        }, 300);
+        state.activeBannerTaskId = null;
       }
 
       // =========================================================================
-      // 13. NAVIGATION & EVENT LISTENERS
+      // 13. NAVIGATION & MODAL CONTROLLERS
       // =========================================================================
       function switchTab(tabName) {
         state.activeTab = tabName;
@@ -2191,228 +2252,46 @@
         }
 
         dom.navTabBtns.forEach((btn) => {
-          const isMatch = btn.dataset.tab === tabName;
-          btn.classList.toggle('is-active', isMatch);
+          if (btn.dataset.tab === tabName) {
+            btn.classList.add('is-active');
+          } else {
+            btn.classList.remove('is-active');
+          }
         });
       }
 
-      function updateSoundUI() {
-        if (!dom.iconSoundOn || !dom.iconSoundOff) return;
-        if (state.soundEnabled) {
-          dom.iconSoundOn.classList.remove('hidden');
-          dom.iconSoundOff.classList.add('hidden');
-        } else {
-          dom.iconSoundOn.classList.add('hidden');
-          dom.iconSoundOff.classList.remove('hidden');
-        }
-      }
-
-      dom.modeBtns.forEach((btn) => {
-        on(btn, 'click', () => switchMode(btn.dataset.mode, null, false));
-      });
-
-      on(dom.autoplayToggleBtn, 'click', () => {
-        state.autoPlay = !state.autoPlay;
-        saveJSON(STORAGE_KEYS.AUTO_PLAY, state.autoPlay);
-        renderCycleStatus();
-      });
-
-      on(dom.startPauseBtn, 'click', () => {
-        if (state.isRunning) pauseTimer();
-        else startTimer();
-      });
-
-      on(dom.resetBtn, 'click', stopAndResetTimer);
-      on(dom.stepMinusBtn, 'click', () => adjustCurrentDuration(-1));
-      on(dom.stepPlusBtn, 'click', () => adjustCurrentDuration(1));
-      on(dom.notifToggleBtn, 'click', requestSystemNotifications);
-
-      on(dom.soundToggleBtn, 'click', () => {
-        state.soundEnabled = !state.soundEnabled;
-        saveJSON(STORAGE_KEYS.SOUND, state.soundEnabled);
-        updateSoundUI();
-        if (state.soundEnabled) playChime('reminder');
-      });
-
-      on(dom.switchToPlannerBtn, 'click', () => switchTab('planner'));
-      on(dom.completeActiveTaskBtn, 'click', () => {
-        if (state.activeTaskId) toggleTaskComplete(state.activeTaskId);
-      });
-      on(dom.editActiveTaskBtn, 'click', () => {
-        if (state.activeTaskId) openEditTaskModal(state.activeTaskId);
-      });
-
-      dom.navTabBtns.forEach((btn) => {
-        on(btn, 'click', () => switchTab(btn.dataset.tab));
-      });
-
-      on(dom.calPrevBtn, 'click', () => {
-        state.calendarMonth -= 1;
-        if (state.calendarMonth < 0) {
-          state.calendarMonth = 11;
-          state.calendarYear -= 1;
-        }
-        renderCalendar();
-      });
-
-      on(dom.calNextBtn, 'click', () => {
-        state.calendarMonth += 1;
-        if (state.calendarMonth > 11) {
-          state.calendarMonth = 0;
-          state.calendarYear += 1;
-        }
-        renderCalendar();
-      });
-
-      on(dom.calTodayBtn, 'click', () => {
-        const now = new Date();
-        state.calendarYear = now.getFullYear();
-        state.calendarMonth = now.getMonth();
-        state.selectedDate = getTodayStr();
-        renderCalendar();
-        renderTasksForSelectedDate();
-      });
-
-      // Settings Modal
-      on(dom.openSettingsBtn, 'click', () => {
+      function openSettingsModal() {
         if (dom.inputDurFocus) dom.inputDurFocus.value = state.durations.focus;
         if (dom.inputDurShort) dom.inputDurShort.value = state.durations.short;
         if (dom.inputDurLong) dom.inputDurLong.value = state.durations.long;
         if (dom.inputDurLunch) dom.inputDurLunch.value = state.durations.lunch;
         if (dom.inputLongInterval) dom.inputLongInterval.value = state.longRestInterval;
         if (dom.settingsModal) dom.settingsModal.classList.remove('hidden');
-      });
-
-      on(dom.closeSettingsBtn, 'click', () => {
-        if (dom.settingsModal) dom.settingsModal.classList.add('hidden');
-      });
-
-      on(dom.settingsModal, 'click', (e) => {
-        if (e.target === dom.settingsModal && dom.settingsModal) {
-          dom.settingsModal.classList.add('hidden');
-        }
-      });
-
-      document.querySelectorAll('[data-setting-step]').forEach((btn) => {
-        on(btn, 'click', () => {
-          const [key, deltaStr] = (btn.dataset.settingStep || '').split(':');
-          const delta = parseInt(deltaStr, 10);
-          const inputMap = {
-            focus: dom.inputDurFocus,
-            short: dom.inputDurShort,
-            long: dom.inputDurLong,
-            lunch: dom.inputDurLunch,
-          };
-          const inp = inputMap[key];
-          if (!inp) return;
-          const cur = parseInt(inp.value, 10) || DEFAULT_DURATIONS[key];
-          inp.value = Math.max(1, Math.min(180, cur + delta));
-        });
-      });
-
-      on(dom.intervalMinusBtn, 'click', () => {
-        if (!dom.inputLongInterval) return;
-        const cur = parseInt(dom.inputLongInterval.value, 10) || DEFAULT_LONG_INTERVAL;
-        dom.inputLongInterval.value = Math.max(2, cur - 1);
-      });
-
-      on(dom.intervalPlusBtn, 'click', () => {
-        if (!dom.inputLongInterval) return;
-        const cur = parseInt(dom.inputLongInterval.value, 10) || DEFAULT_LONG_INTERVAL;
-        dom.inputLongInterval.value = Math.min(10, cur + 1);
-      });
-
-      on(dom.resetDefaultsBtn, 'click', () => {
-        if (dom.inputDurFocus) dom.inputDurFocus.value = DEFAULT_DURATIONS.focus;
-        if (dom.inputDurShort) dom.inputDurShort.value = DEFAULT_DURATIONS.short;
-        if (dom.inputDurLong) dom.inputDurLong.value = DEFAULT_DURATIONS.long;
-        if (dom.inputDurLunch) dom.inputDurLunch.value = DEFAULT_DURATIONS.lunch;
-        if (dom.inputLongInterval) dom.inputLongInterval.value = DEFAULT_LONG_INTERVAL;
-      });
-
-      on(dom.saveSettingsBtn, 'click', () => {
-        state.durations.focus = Math.max(1, Math.min(180, parseInt(dom.inputDurFocus?.value, 10) || 25));
-        state.durations.short = Math.max(1, Math.min(60, parseInt(dom.inputDurShort?.value, 10) || 5));
-        state.durations.long = Math.max(1, Math.min(90, parseInt(dom.inputDurLong?.value, 10) || 15));
-        state.durations.lunch = Math.max(5, Math.min(180, parseInt(dom.inputDurLunch?.value, 10) || 45));
-        state.longRestInterval = Math.max(2, Math.min(10, parseInt(dom.inputLongInterval?.value, 10) || 4));
-
-        saveJSON(STORAGE_KEYS.DURATIONS, state.durations);
-        saveJSON(STORAGE_KEYS.LONG_INTERVAL, state.longRestInterval);
-
-        if (!state.isRunning) {
-          const tInfo = getActiveStructuredTaskState();
-          if (!tInfo.active) {
-            state.totalSeconds = state.durations[state.mode] * 60;
-            state.secondsLeft = state.totalSeconds;
-          }
-        }
-        updateTimerUI();
-        if (dom.settingsModal) dom.settingsModal.classList.add('hidden');
-      });
-
-      // Add / Edit Structured Task Modal
-      dom.modalQuickBtns.forEach((btn) => {
-        on(btn, 'click', () => {
-          const modeKey = btn.dataset.modalQuick;
-          state.modalDraftBlocks.push(createBlock(modeKey, state.durations[modeKey]));
-          renderModalBlocksList();
-        });
-      });
-
-      dom.presetBtns.forEach((btn) => {
-        on(btn, 'click', () => {
-          applyPresetToDraft(btn.dataset.preset);
-        });
-      });
-
-      on(dom.modalBlockModeSelect, 'change', () => {
-        const m = dom.modalBlockModeSelect.value;
-        if (dom.modalBlockDurInput) {
-          dom.modalBlockDurInput.value = state.durations[m] || 25;
-        }
-      });
-
-      on(dom.modalAddCustomBlockBtn, 'click', () => {
-        const m = dom.modalBlockModeSelect?.value || 'focus';
-        const d = Math.max(1, Math.min(180, parseInt(dom.modalBlockDurInput?.value, 10) || state.durations[m]));
-        state.modalDraftBlocks.push(createBlock(m, d));
-        renderModalBlocksList();
-      });
-
-      function openEditTaskModal(taskId) {
-        const task = state.tasks.find((t) => t.id === taskId);
-        if (!task) return;
-
-        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Edit Structured Task';
-        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Save Task Structure';
-        if (dom.editingTaskIdInput) dom.editingTaskIdInput.value = task.id;
-        if (dom.taskTitleInput) dom.taskTitleInput.value = task.title;
-        if (dom.taskDateInput) dom.taskDateInput.value = task.date;
-        if (dom.taskReminderToggle) dom.taskReminderToggle.checked = Boolean(task.reminderEnabled);
-        if (dom.taskTimeInput) dom.taskTimeInput.value = task.reminderTime || getFutureHHMM(30);
-
-        if (dom.reminderTimeWrapper) {
-          dom.reminderTimeWrapper.classList.toggle('opacity-40', !task.reminderEnabled);
-          dom.reminderTimeWrapper.classList.toggle('pointer-events-none', !task.reminderEnabled);
-        }
-
-        state.modalDraftBlocks = task.blocks.map((b) => ({ ...b }));
-        renderModalBlocksList();
-
-        if (dom.taskModal) dom.taskModal.classList.remove('hidden');
-        if (dom.taskTitleInput) dom.taskTitleInput.focus();
       }
 
-      on(dom.openAddTaskBtn, 'click', () => {
+      function closeSettingsModal() {
+        if (dom.settingsModal) dom.settingsModal.classList.add('hidden');
+      }
+
+      function syncReminderToggleUI(enabled) {
+        if (!dom.taskReminderToggle || !dom.reminderTimeWrapper) return;
+        dom.taskReminderToggle.checked = Boolean(enabled);
+        if (enabled) {
+          dom.reminderTimeWrapper.classList.remove('opacity-40', 'pointer-events-none');
+        } else {
+          dom.reminderTimeWrapper.classList.add('opacity-40', 'pointer-events-none');
+        }
+      }
+
+      function openAddTaskModal() {
         if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Plan Structured Task';
         if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Save Structured Task';
         if (dom.editingTaskIdInput) dom.editingTaskIdInput.value = '';
         if (dom.taskTitleInput) dom.taskTitleInput.value = '';
         if (dom.taskDateInput) dom.taskDateInput.value = state.selectedDate;
-        if (dom.taskReminderToggle) dom.taskReminderToggle.checked = false;
-        if (dom.reminderTimeWrapper) dom.reminderTimeWrapper.classList.add('opacity-40', 'pointer-events-none');
-        if (dom.taskTimeInput) dom.taskTimeInput.value = getFutureHHMM(30);
+        if (dom.taskTimeInput) dom.taskTimeInput.value = getFutureHHMM(15);
+        syncReminderToggleUI(false);
+
         if (dom.modalBlockModeSelect) dom.modalBlockModeSelect.value = 'focus';
         if (dom.modalBlockDurInput) dom.modalBlockDurInput.value = state.durations.focus;
 
@@ -2424,131 +2303,364 @@
         renderModalBlocksList();
 
         if (dom.taskModal) dom.taskModal.classList.remove('hidden');
-        if (dom.taskTitleInput) dom.taskTitleInput.focus();
-      });
+        setTimeout(() => {
+          if (dom.taskTitleInput) dom.taskTitleInput.focus();
+        }, 60);
+      }
 
-      on(dom.closeTaskModalBtn, 'click', () => {
-        if (dom.taskModal) dom.taskModal.classList.add('hidden');
-      });
+      function openEditTaskModal(taskId) {
+        const task = state.tasks.find((t) => t.id === taskId);
+        if (!task) return;
 
-      on(dom.taskModal, 'click', (e) => {
-        if (e.target === dom.taskModal && dom.taskModal) {
-          dom.taskModal.classList.add('hidden');
-        }
-      });
+        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Edit Structured Task';
+        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Update Task & Structure';
+        if (dom.editingTaskIdInput) dom.editingTaskIdInput.value = task.id;
+        if (dom.taskTitleInput) dom.taskTitleInput.value = task.title;
+        if (dom.taskDateInput) dom.taskDateInput.value = task.date;
+        if (dom.taskTimeInput) dom.taskTimeInput.value = task.reminderTime || getFutureHHMM(15);
+        syncReminderToggleUI(Boolean(task.reminderEnabled));
 
-      on(dom.taskReminderToggle, 'change', () => {
-        if (!dom.taskReminderToggle || !dom.reminderTimeWrapper) return;
-        const enabled = dom.taskReminderToggle.checked;
-        dom.reminderTimeWrapper.classList.toggle('opacity-40', !enabled);
-        dom.reminderTimeWrapper.classList.toggle('pointer-events-none', !enabled);
-      });
+        if (dom.modalBlockModeSelect) dom.modalBlockModeSelect.value = 'focus';
+        if (dom.modalBlockDurInput) dom.modalBlockDurInput.value = state.durations.focus;
 
-      on(dom.addTaskForm, 'submit', (e) => {
-        e.preventDefault();
-        const title = (dom.taskTitleInput?.value || '').trim();
-        if (!title) return;
-
-        if (state.modalDraftBlocks.length === 0) {
-          state.modalDraftBlocks.push(createBlock('focus', state.durations.focus));
-        }
-
-        const chosenDate = dom.taskDateInput?.value || state.selectedDate;
-        const editingId = dom.editingTaskIdInput?.value || '';
-        const cleanBlocks = state.modalDraftBlocks.map((b) => ({
+        state.modalDraftBlocks = task.blocks.map((b) => ({
           id: b.id,
-          mode: MODE_CONFIG[b.mode] ? b.mode : 'focus',
-          duration: Math.max(1, Math.min(180, Number(b.duration) || 25)),
-          note: String(b.note || '').trim(),
+          mode: b.mode,
+          duration: b.duration,
+          note: b.note || '',
           completed: Boolean(b.completed),
         }));
-        const allBlocksDone = cleanBlocks.every((b) => b.completed);
+        renderModalBlocksList();
 
-        if (editingId) {
-          const existing = state.tasks.find((t) => t.id === editingId);
-          if (existing) {
-            existing.title = title;
-            existing.date = chosenDate;
-            existing.reminderEnabled = Boolean(dom.taskReminderToggle?.checked);
-            existing.reminderTime = dom.taskTimeInput?.value || '09:00';
-            existing.blocks = cleanBlocks;
-            existing.completed = allBlocksDone;
-            saveJSON(STORAGE_KEYS.TASKS, state.tasks);
+        if (dom.taskModal) dom.taskModal.classList.remove('hidden');
+      }
 
-            if (state.activeTaskId === existing.id && !state.isRunning) {
+      function closeAddTaskModal() {
+        if (dom.taskModal) dom.taskModal.classList.add('hidden');
+      }
+
+      // =========================================================================
+      // 14. EVENT LISTENERS BINDING
+      // =========================================================================
+      function bindEvents() {
+        // Mode buttons
+        dom.modeBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            switchMode(btn.dataset.mode, null, false);
+          });
+        });
+
+        // Auto-play toggle
+        on(dom.autoplayToggleBtn, 'click', () => {
+          state.autoPlay = !state.autoPlay;
+          saveJSON(STORAGE_KEYS.AUTO_PLAY, state.autoPlay);
+          renderCycleStatus();
+        });
+
+        // Play / Pause & Stop
+        on(dom.startPauseBtn, 'click', () => {
+          if (state.isRunning) {
+            pauseTimer();
+          } else {
+            startTimer();
+          }
+        });
+
+        on(dom.resetBtn, 'click', stopAndResetTimer);
+
+        // +/- 1 min duration steppers
+        on(dom.stepMinusBtn, 'click', () => adjustCurrentDuration(-1));
+        on(dom.stepPlusBtn, 'click', () => adjustCurrentDuration(1));
+
+        // Active task card buttons
+        on(dom.switchToPlannerBtn, 'click', () => switchTab('planner'));
+
+        on(dom.completeActiveTaskBtn, 'click', () => {
+          if (state.activeTaskId) {
+            toggleTaskComplete(state.activeTaskId);
+          }
+        });
+
+        on(dom.editActiveTaskBtn, 'click', () => {
+          if (state.activeTaskId) {
+            openEditTaskModal(state.activeTaskId);
+          }
+        });
+
+        // Bottom pill navigation
+        dom.navTabBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            switchTab(btn.dataset.tab);
+          });
+        });
+
+        // Header buttons
+        on(dom.notifToggleBtn, 'click', requestSystemNotifications);
+
+        on(dom.soundToggleBtn, 'click', () => {
+          state.soundEnabled = !state.soundEnabled;
+          saveJSON(STORAGE_KEYS.SOUND, state.soundEnabled);
+          if (dom.iconSoundOn && dom.iconSoundOff) {
+            dom.iconSoundOn.classList.toggle('hidden', !state.soundEnabled);
+            dom.iconSoundOff.classList.toggle('hidden', state.soundEnabled);
+          }
+          if (state.soundEnabled) playChime('transition');
+        });
+
+        // Settings modal controls
+        on(dom.openSettingsBtn, 'click', openSettingsModal);
+        on(dom.closeSettingsBtn, 'click', closeSettingsModal);
+
+        document.querySelectorAll('[data-setting-step]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const [modeKey, deltaStr] = btn.dataset.settingStep.split(':');
+            const delta = parseInt(deltaStr, 10);
+            const inputMap = {
+              focus: dom.inputDurFocus,
+              short: dom.inputDurShort,
+              long: dom.inputDurLong,
+              lunch: dom.inputDurLunch,
+            };
+            const targetInput = inputMap[modeKey];
+            if (!targetInput) return;
+            const min = parseInt(targetInput.min, 10) || 1;
+            const max = parseInt(targetInput.max, 10) || 180;
+            const nextVal = Math.max(min, Math.min(max, (parseInt(targetInput.value, 10) || min) + delta));
+            targetInput.value = nextVal;
+          });
+        });
+
+        on(dom.intervalMinusBtn, 'click', () => {
+          if (!dom.inputLongInterval) return;
+          dom.inputLongInterval.value = Math.max(2, (parseInt(dom.inputLongInterval.value, 10) || 4) - 1);
+        });
+
+        on(dom.intervalPlusBtn, 'click', () => {
+          if (!dom.inputLongInterval) return;
+          dom.inputLongInterval.value = Math.min(10, (parseInt(dom.inputLongInterval.value, 10) || 4) + 1);
+        });
+
+        on(dom.resetDefaultsBtn, 'click', () => {
+          if (dom.inputDurFocus) dom.inputDurFocus.value = DEFAULT_DURATIONS.focus;
+          if (dom.inputDurShort) dom.inputDurShort.value = DEFAULT_DURATIONS.short;
+          if (dom.inputDurLong) dom.inputDurLong.value = DEFAULT_DURATIONS.long;
+          if (dom.inputDurLunch) dom.inputDurLunch.value = DEFAULT_DURATIONS.lunch;
+          if (dom.inputLongInterval) dom.inputLongInterval.value = DEFAULT_LONG_INTERVAL;
+        });
+
+        on(dom.saveSettingsBtn, 'click', () => {
+          state.durations.focus = Math.max(1, Math.min(180, parseInt(dom.inputDurFocus?.value, 10) || 25));
+          state.durations.short = Math.max(1, Math.min(60, parseInt(dom.inputDurShort?.value, 10) || 5));
+          state.durations.long = Math.max(1, Math.min(90, parseInt(dom.inputDurLong?.value, 10) || 15));
+          state.durations.lunch = Math.max(5, Math.min(180, parseInt(dom.inputDurLunch?.value, 10) || 45));
+          state.longRestInterval = Math.max(2, Math.min(10, parseInt(dom.inputLongInterval?.value, 10) || 4));
+
+          saveJSON(STORAGE_KEYS.DURATIONS, state.durations);
+          saveJSON(STORAGE_KEYS.LONG_INTERVAL, state.longRestInterval);
+
+          if (!state.isRunning) {
+            const tInfo = getActiveStructuredTaskState();
+            if (!tInfo.active) {
+              state.totalSeconds = state.durations[state.mode] * 60;
+              state.secondsLeft = state.totalSeconds;
+            }
+          }
+          updateTimerUI();
+          closeSettingsModal();
+          showTransitionToast('focus', 'Settings saved');
+        });
+
+        // Calendar navigation
+        on(dom.calTodayBtn, 'click', () => {
+          const now = new Date();
+          state.calendarYear = now.getFullYear();
+          state.calendarMonth = now.getMonth();
+          state.selectedDate = getTodayStr();
+          renderCalendar();
+          renderTasksForSelectedDate();
+          renderActiveTaskCard();
+        });
+
+        on(dom.calPrevBtn, 'click', () => {
+          state.calendarMonth -= 1;
+          if (state.calendarMonth < 0) {
+            state.calendarMonth = 11;
+            state.calendarYear -= 1;
+          }
+          renderCalendar();
+        });
+
+        on(dom.calNextBtn, 'click', () => {
+          state.calendarMonth += 1;
+          if (state.calendarMonth > 11) {
+            state.calendarMonth = 0;
+            state.calendarYear += 1;
+          }
+          renderCalendar();
+        });
+
+        // Task modal controls
+        on(dom.openAddTaskBtn, 'click', openAddTaskModal);
+        on(dom.closeTaskModalBtn, 'click', closeAddTaskModal);
+
+        on(dom.taskReminderToggle, 'change', (e) => {
+          syncReminderToggleUI(e.target.checked);
+        });
+
+        // Presets inside task modal ("Workday" and "4hr")
+        dom.presetBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            applyPresetToDraft(btn.dataset.preset);
+          });
+        });
+
+        // Quick-add pills inside task modal
+        dom.modalQuickBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const m = btn.dataset.modalQuick;
+            const dur = state.durations[m] || DEFAULT_DURATIONS[m] || 25;
+            state.modalDraftBlocks.push(createBlock(m, dur, ''));
+            renderModalBlocksList();
+          });
+        });
+
+        // Sync custom duration input when dropdown mode changes
+        on(dom.modalBlockModeSelect, 'change', () => {
+          const m = dom.modalBlockModeSelect.value;
+          if (dom.modalBlockDurInput && state.durations[m]) {
+            dom.modalBlockDurInput.value = state.durations[m];
+          }
+        });
+
+        // Custom add button inside task modal
+        on(dom.modalAddCustomBlockBtn, 'click', () => {
+          const m = dom.modalBlockModeSelect ? dom.modalBlockModeSelect.value : 'focus';
+          const dur = dom.modalBlockDurInput ? parseInt(dom.modalBlockDurInput.value, 10) : state.durations[m];
+          state.modalDraftBlocks.push(createBlock(m, dur, ''));
+          renderModalBlocksList();
+        });
+
+        // Save / Update Structured Task form submission
+        on(dom.addTaskForm, 'submit', (e) => {
+          e.preventDefault();
+          const title = dom.taskTitleInput ? dom.taskTitleInput.value.trim() : '';
+          if (!title) return;
+
+          const dateVal = (dom.taskDateInput && dom.taskDateInput.value) || state.selectedDate;
+          const reminderEnabled = Boolean(dom.taskReminderToggle && dom.taskReminderToggle.checked);
+          const reminderTime = (dom.taskTimeInput && dom.taskTimeInput.value) || '09:00';
+          const editingId = dom.editingTaskIdInput ? dom.editingTaskIdInput.value : '';
+
+          const cleanBlocks =
+            state.modalDraftBlocks.length > 0
+              ? state.modalDraftBlocks.map((b) => ({
+                  id: b.id,
+                  mode: MODE_CONFIG[b.mode] ? b.mode : 'focus',
+                  duration: Math.max(1, Math.min(180, Number(b.duration) || 25)),
+                  note: String(b.note || '').trim(),
+                  completed: Boolean(b.completed),
+                }))
+              : [createBlock('focus', state.durations.focus, '')];
+
+          if (editingId) {
+            const existing = state.tasks.find((t) => t.id === editingId);
+            if (existing) {
+              existing.title = title;
+              existing.date = dateVal;
+              existing.reminderEnabled = reminderEnabled;
+              existing.reminderTime = reminderTime;
+              existing.reminded = false;
+              existing.blocks = cleanBlocks;
+              existing.completed = cleanBlocks.every((b) => b.completed);
+
+              if (state.activeTaskId === existing.id && !state.isRunning) {
+                syncTimerToActiveTaskIfIdle();
+              }
+            }
+          } else {
+            const newTask = {
+              id: 'stask-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+              title,
+              date: dateVal,
+              reminderEnabled,
+              reminderTime,
+              reminded: false,
+              completed: false,
+              blocks: cleanBlocks,
+            };
+            state.tasks.unshift(newTask);
+            state.activeTaskId = newTask.id;
+            state.activeBlockId = newTask.blocks[0].id;
+            saveJSON(STORAGE_KEYS.ACTIVE_TASK, state.activeTaskId);
+            if (!state.isRunning) {
               syncTimerToActiveTaskIfIdle();
             }
           }
-        } else {
-          const newTask = {
-            id: 'stask-' + Date.now(),
-            title,
-            date: chosenDate,
-            reminderEnabled: Boolean(dom.taskReminderToggle?.checked),
-            reminderTime: dom.taskTimeInput?.value || '09:00',
-            reminded: false,
-            completed: false,
-            blocks: cleanBlocks,
-          };
 
-          state.tasks.push(newTask);
-          saveJSON(STORAGE_KEYS.TASKS, state.tasks);
-
-          if (!state.activeTaskId && newTask.date === getTodayStr()) {
-            state.activeTaskId = newTask.id;
-            saveJSON(STORAGE_KEYS.ACTIVE_TASK, newTask.id);
-            if (!state.isRunning) syncTimerToActiveTaskIfIdle();
+          state.selectedDate = dateVal;
+          const parts = dateVal.split('-').map(Number);
+          if (parts.length === 3 && !parts.some(isNaN)) {
+            state.calendarYear = parts[0];
+            state.calendarMonth = parts[1] - 1;
           }
-        }
 
-        state.selectedDate = chosenDate;
-        const parts = chosenDate.split('-').map(Number);
-        if (parts.length === 3 && !parts.some(isNaN)) {
-          state.calendarYear = parts[0];
-          state.calendarMonth = parts[1] - 1;
-        }
+          saveJSON(STORAGE_KEYS.TASKS, state.tasks);
+          closeAddTaskModal();
+          renderCalendar();
+          renderTasksForSelectedDate();
+          renderActiveTaskCard();
+          updateTimerUI();
+          showTransitionToast('focus', editingId ? 'Task updated' : 'Structured task saved');
+        });
 
-        renderActiveTaskCard();
-        renderCalendar();
-        renderTasksForSelectedDate();
-        updateTimerUI();
-        if (dom.taskModal) dom.taskModal.classList.add('hidden');
-      });
+        // Reminder banner actions
+        on(dom.reminderFocusBtn, 'click', () => {
+          const targetId = state.activeBannerTaskId;
+          hideReminderBanner();
+          if (targetId) {
+            runStructuredTask(targetId, false);
+          }
+        });
 
-      on(dom.reminderDismissBtn, 'click', hideReminderBanner);
-      on(dom.reminderFocusBtn, 'click', () => {
-        const taskId = state.activeBannerTaskId;
-        hideReminderBanner();
-        if (taskId) {
-          runStructuredTask(taskId, false);
-        } else {
-          switchTab('timer');
-          startTimer();
-        }
-      });
+        on(dom.reminderDismissBtn, 'click', hideReminderBanner);
+
+        // Backdrop clicks to close modals
+        on(dom.settingsModal, 'click', (e) => {
+          if (e.target === dom.settingsModal) closeSettingsModal();
+        });
+
+        on(dom.taskModal, 'click', (e) => {
+          if (e.target === dom.taskModal) closeAddTaskModal();
+        });
+      }
 
       // =========================================================================
-      // 14. INITIALIZATION
+      // 15. INITIALIZATION
       // =========================================================================
       function init() {
-        const now = new Date();
         if (dom.headerDateLabel) {
-          dom.headerDateLabel.textContent = now.toLocaleDateString('en-US', {
+          dom.headerDateLabel.textContent = new Date().toLocaleDateString('en-US', {
             weekday: 'short',
             month: 'short',
             day: 'numeric',
           });
         }
 
-        syncTimerToActiveTaskIfIdle();
-        updateSoundUI();
+        if (dom.iconSoundOn && dom.iconSoundOff) {
+          dom.iconSoundOn.classList.toggle('hidden', !state.soundEnabled);
+          dom.iconSoundOff.classList.toggle('hidden', state.soundEnabled);
+        }
+
         updateNotificationBadgeUI();
+        syncTimerToActiveTaskIfIdle();
+        bindEvents();
         updateTimerUI();
         renderActiveTaskCard();
         renderCalendar();
         renderTasksForSelectedDate();
 
-        setInterval(checkDueReminders, 1000);
+        setInterval(checkScheduledReminders, 10000);
+        checkScheduledReminders();
       }
 
       if (document.readyState === 'loading') {
