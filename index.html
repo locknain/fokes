@@ -3,12 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FocusFlow • Mobile Pomodoro & Sequence Planner</title>
+  <title>FocusFlow • Mobile Pomodoro & Task Structure Planner</title>
 
-  <!-- Google Fonts: Montserrat & Poppins -->
+  <!-- PWA Standalone & Notification Metadata -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0A0A0C" />
+  <link rel="manifest" href='data:application/manifest+json,{"name":"FocusFlow","short_name":"FocusFlow","start_url":".","display":"standalone","background_color":"#0A0A0C","theme_color":"#0A0A0C"}' />
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,8 +24,9 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Poppins', 'sans-serif'],
-            heading: ['Montserrat', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
           },
         },
       },
@@ -28,10 +35,13 @@
 
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
     .font-heading {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
     }
     /* Custom subtle dark scrollbar */
     ::-webkit-scrollbar {
@@ -45,7 +55,7 @@
       background: rgba(255, 255, 255, 0.14);
       border-radius: 9999px;
     }
-    /* Drag and drop visual cues */
+    /* Drag and drop visual cues inside modal sequence builder */
     .drag-over-top {
       border-top: 2px solid #F43F5E !important;
     }
@@ -150,8 +160,16 @@
         <!-- Completed Focus Counter Pill -->
         <div class="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10 flex items-center gap-1.5" title="Focus sessions completed today">
           <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-          <span id="session-count-label" class="text-xs font-semibold text-zinc-200">0</span>
+          <span id="session-count-label" class="text-xs font-mono font-semibold text-zinc-200">0</span>
         </div>
+
+        <!-- System Notifications Permission Toggle -->
+        <button id="notif-toggle-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition relative" title="Enable system notifications">
+          <svg id="icon-notif-bell" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span id="notif-status-dot" class="hidden absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        </button>
 
         <!-- Sound Toggle -->
         <button id="sound-toggle-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Toggle chime sound">
@@ -165,7 +183,7 @@
         </button>
 
         <!-- Timer Duration Settings Button -->
-        <button id="open-settings-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Configure timer durations">
+        <button id="open-settings-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Configure default timer durations">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
           </svg>
@@ -199,32 +217,32 @@
           </button>
         </div>
 
-        <!-- Continuous Auto-Play & Sequence Mode Bar -->
+        <!-- Continuous Auto-Play & Task Structure Progress Bar -->
         <div class="flex flex-col gap-1.5 px-3 py-2 rounded-xl bg-white/[0.04] backdrop-blur-md border border-white/[0.08]">
           <div class="flex items-center justify-between">
-            <button id="autoplay-toggle-btn" type="button" class="flex items-center gap-2 text-left group" title="Toggle continuous auto-play loop">
+            <button id="autoplay-toggle-btn" type="button" class="flex items-center gap-2 text-left group" title="Toggle continuous auto-play">
               <span id="autoplay-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all"></span>
               <span id="autoplay-status-text" class="text-[11px] font-medium text-zinc-200 group-hover:text-white transition">
                 Auto-Play: <strong class="text-emerald-400 font-semibold">ON</strong>
               </span>
             </button>
 
-            <!-- Toggle between Default Loop and Custom Day Queue -->
-            <button id="queue-mode-toggle-btn" type="button" class="px-2 py-0.5 rounded-lg bg-white/[0.06] hover:bg-white/10 border border-white/10 text-[10px] font-semibold text-zinc-300 transition flex items-center gap-1" title="Switch between Default Pomodoro Loop and Custom Day Queue">
+            <!-- Toggle between Task Structure Mode and Default Loop -->
+            <button id="queue-mode-toggle-btn" type="button" class="px-2 py-0.5 rounded-lg bg-white/[0.06] hover:bg-white/10 border border-white/10 text-[10px] font-semibold text-zinc-300 transition flex items-center gap-1" title="Switch between Scheduled Task Structure and Default Loop">
               <span id="queue-mode-badge-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              <span id="queue-mode-label">Custom Day Queue</span>
+              <span id="queue-mode-label">Task Structure</span>
             </button>
           </div>
 
-          <div class="flex items-center justify-between pt-1 border-t border-white/[0.06]">
-            <!-- Visual Cycle / Queue Progress Dots -->
-            <div class="flex items-center gap-1.5 min-w-0">
-              <div id="cycle-dots-container" class="flex items-center gap-1 shrink-0"></div>
-              <span id="queue-progress-text" class="text-[10px] font-mono text-zinc-400 truncate">Block 1/4</span>
+          <div class="flex items-center justify-between pt-1 border-t border-white/[0.06] gap-2">
+            <!-- Visual Block Progress Pills -->
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <div id="cycle-dots-container" class="flex items-center gap-1 overflow-x-auto py-0.5"></div>
+              <span id="queue-progress-text" class="text-[10px] font-mono text-zinc-400 shrink-0">Step 1/4</span>
             </div>
 
             <div class="flex items-center gap-1.5 shrink-0">
-              <span id="next-up-label" class="text-[10px] text-zinc-300 font-medium">Next: Rest</span>
+              <span id="next-up-label" class="text-[10px] text-zinc-300 font-medium truncate max-w-[95px]">Next: Rest</span>
               <button id="skip-next-btn" type="button" class="px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 text-[10px] font-semibold text-zinc-200 transition active:scale-95" title="Advance to next block immediately">
                 Skip »
               </button>
@@ -264,7 +282,7 @@
               <span id="mode-badge-text" class="font-heading text-[10px] font-bold uppercase tracking-widest text-rose-400 mb-1">
                 Focus Session
               </span>
-              <div id="timer-display" class="font-heading text-[46px] font-extrabold tracking-tight text-white tabular-nums leading-none">
+              <div id="timer-display" class="font-mono text-[44px] font-extrabold tracking-tight text-white tabular-nums leading-none">
                 25:00
               </div>
 
@@ -273,7 +291,7 @@
                 <button id="step-minus-btn" type="button" class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-sm flex items-center justify-center transition active:scale-90" title="Decrease duration by 1 min">
                   −
                 </button>
-                <span id="duration-pill-label" class="text-[11px] font-medium text-zinc-300 min-w-[46px]">25 min</span>
+                <span id="duration-pill-label" class="text-[11px] font-mono font-medium text-zinc-300 min-w-[46px]">25 min</span>
                 <button id="step-plus-btn" type="button" class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-sm flex items-center justify-center transition active:scale-90" title="Increase duration by 1 min">
                   +
                 </button>
@@ -294,7 +312,7 @@
             <span id="start-pause-text">Start Focus</span>
           </button>
 
-          <button id="reset-btn" type="button" class="py-3.5 px-4 rounded-2xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-zinc-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition active:scale-95" title="Stop and reset current timer">
+          <button id="reset-btn" type="button" class="py-3.5 px-4 rounded-2xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-zinc-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition active:scale-95" title="Stop and reset current block">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
               <rect x="6" y="6" width="12" height="12" rx="2" />
             </svg>
@@ -302,32 +320,37 @@
           </button>
         </div>
 
-        <!-- Active Focus / Scheduled Task Card -->
+        <!-- Active Structured Task Card -->
         <div class="bg-white/[0.04] backdrop-blur-md rounded-2xl p-3 border border-white/[0.08]">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Active Sequence Block</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Active Structured Task</span>
             <button id="switch-to-planner-btn" type="button" class="text-[11px] font-semibold text-rose-400 hover:text-rose-300">
-              Edit Queue →
+              All Tasks →
             </button>
           </div>
           <div id="active-task-container" class="flex items-center justify-between gap-2.5">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <button id="complete-active-task-btn" type="button" class="w-5 h-5 rounded-full border-2 border-zinc-600 hover:border-rose-500 flex items-center justify-center shrink-0 transition" title="Mark active block complete">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <button id="complete-active-task-btn" type="button" class="w-5 h-5 rounded-full border-2 border-zinc-600 hover:border-rose-500 flex items-center justify-center shrink-0 transition" title="Mark entire task complete">
                 <span class="w-2 h-2 rounded-full bg-transparent"></span>
               </button>
-              <div class="min-w-0">
-                <p id="active-task-title" class="text-xs font-medium text-zinc-100 truncate">No active block selected</p>
-                <div id="active-task-meta" class="hidden flex items-center gap-1.5 mt-0.5">
-                  <span id="active-task-mode-badge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">Focus</span>
-                  <span id="active-task-pomo" class="text-[10px] text-zinc-400 font-mono">0/1 🍅</span>
+              <div class="min-w-0 flex-1">
+                <p id="active-task-title" class="text-xs font-semibold text-zinc-100 truncate">No active task selected</p>
+                <div id="active-task-meta" class="hidden flex items-center gap-1.5 mt-1">
+                  <span id="active-task-mode-badge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">Step 1/4: Focus</span>
+                  <span id="active-task-block-note" class="text-[10px] text-zinc-400 truncate">Deep work</span>
                 </div>
               </div>
             </div>
+            <button id="edit-active-task-btn" type="button" class="hidden p-1.5 rounded-lg bg-white/[0.06] hover:bg-white/15 text-zinc-300 transition shrink-0" title="Edit this task's timer structure">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
           </div>
         </div>
       </section>
 
-      <!-- ==================== TAB 2: CALENDAR & MANUAL SEQUENCE ORGANIZER ==================== -->
+      <!-- ==================== TAB 2: CALENDAR & STRUCTURED TASKS ==================== -->
       <section id="view-planner" class="hidden flex-1 flex flex-col px-4 pt-3 pb-24 gap-2.5 overflow-y-auto">
 
         <!-- Compact Monthly Calendar Card -->
@@ -366,55 +389,22 @@
           <div id="calendar-days-grid" class="grid grid-cols-7 gap-y-0.5 text-center"></div>
         </div>
 
-        <!-- Selected Date Task Header + Run Day Sequence & Schedule Button -->
+        <!-- Selected Date Header + Create Structured Task Button -->
         <div class="flex items-center justify-between gap-2 px-0.5">
           <div class="min-w-0">
-            <h3 id="selected-date-heading" class="font-heading text-sm font-bold text-white truncate">Queue for Today</h3>
-            <p id="selected-date-subtext" class="text-[11px] text-zinc-400 truncate">0 blocks in sequence</p>
+            <h3 id="selected-date-heading" class="font-heading text-sm font-bold text-white truncate">Tasks for Today</h3>
+            <p id="selected-date-subtext" class="text-[11px] text-zinc-400 truncate">0 scheduled tasks</p>
           </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <button id="run-day-sequence-btn" type="button" class="px-2.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[11px] font-heading font-bold flex items-center gap-1 transition active:scale-95" title="Play all blocks in exact order on the Timer">
-              <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              <span>Run Queue</span>
-            </button>
-            <button id="open-add-task-btn" type="button" class="px-3 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-[11px] font-heading font-bold flex items-center gap-1 shadow-lg shadow-rose-500/20 transition active:scale-95">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Schedule</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Quick-Add Sequence Blocks Bar (+ Focus, + Short Rest, + Long Rest, + Lunch) -->
-        <div class="grid grid-cols-4 gap-1.5">
-          <button type="button" data-quick-add="focus" class="py-1.5 px-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-rose-300 text-[10px] font-semibold flex items-center justify-center gap-1 transition active:scale-95">
-            <span>+ Focus</span>
-          </button>
-          <button type="button" data-quick-add="short" class="py-1.5 px-1.5 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/25 text-teal-300 text-[10px] font-semibold flex items-center justify-center gap-1 transition active:scale-95">
-            <span>+ Rest</span>
-          </button>
-          <button type="button" data-quick-add="long" class="py-1.5 px-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 text-indigo-300 text-[10px] font-semibold flex items-center justify-center gap-1 transition active:scale-95">
-            <span>+ Long</span>
-          </button>
-          <button type="button" data-quick-add="lunch" class="py-1.5 px-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 text-amber-300 text-[10px] font-semibold flex items-center justify-center gap-1 transition active:scale-95">
-            <span>+ Lunch</span>
+          <button id="open-add-task-btn" type="button" class="px-3.5 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-[11px] font-heading font-bold flex items-center gap-1.5 shadow-lg shadow-rose-500/20 transition active:scale-95 shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>New Task</span>
           </button>
         </div>
 
-        <!-- Timeline Summary Bar (Total Focus, Total Break, Estimated Finish) -->
-        <div id="timeline-summary-bar" class="hidden px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between text-[11px]">
-          <div class="flex items-center gap-2.5">
-            <span class="text-rose-300 font-medium">🎯 <strong id="summary-focus-mins">0m</strong></span>
-            <span class="text-teal-300 font-medium">☕ <strong id="summary-break-mins">0m</strong></span>
-          </div>
-          <span class="text-zinc-400 font-mono text-[10px]">Est. End: <strong id="summary-end-time" class="text-zinc-200">--:--</strong></span>
-        </div>
-
-        <!-- Task List Container (Draggable & Reorderable Sequence) -->
-        <div id="task-list-container" class="flex-1 flex flex-col gap-2 pb-2"></div>
+        <!-- Structured Task List Container -->
+        <div id="task-list-container" class="flex-1 flex flex-col gap-2.5 pb-2"></div>
       </section>
 
     </main>
@@ -441,12 +431,12 @@
     </nav>
 
     <!-- ==================== MODAL 1: DURATION & CYCLE SETTINGS DRAWER ==================== -->
-    <div id="settings-modal" class="hidden absolute inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center">
+    <div id="settings-modal" class="hidden absolute inset-0 z-40 bg-black/75 backdrop-blur-sm flex items-end justify-center">
       <div class="bg-[#16161B] w-full rounded-t-3xl p-5 shadow-2xl border-t border-white/15">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="font-heading text-base font-bold text-white">Timer & Loop Settings</h3>
-            <p class="text-xs text-zinc-400">Default durations (minutes) & cycle rules</p>
+            <h3 class="font-heading text-base font-bold text-white">Default Durations & Loop</h3>
+            <p class="text-xs text-zinc-400">Base minutes for new blocks & Default Loop</p>
           </div>
           <button id="close-settings-btn" type="button" class="p-2 rounded-full bg-white/10 text-zinc-400 hover:text-white transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -545,13 +535,13 @@
       </div>
     </div>
 
-    <!-- ==================== MODAL 2: SCHEDULE / EDIT SESSION BLOCK MODAL ==================== -->
-    <div id="task-modal" class="hidden absolute inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center">
-      <form id="add-task-form" class="bg-[#16161B] w-full rounded-t-3xl p-5 shadow-2xl border-t border-white/15 max-h-[90%] overflow-y-auto">
-        <div class="flex items-center justify-between mb-4">
+    <!-- ==================== MODAL 2: UNIFIED TASK + TIMER STRUCTURE BUILDER ==================== -->
+    <div id="task-modal" class="hidden absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex items-end justify-center">
+      <form id="add-task-form" class="bg-[#141418] w-full rounded-t-3xl p-4 sm:p-5 shadow-2xl border-t border-white/15 max-h-[92%] flex flex-col">
+        <div class="flex items-center justify-between mb-3 shrink-0">
           <div>
-            <h3 id="task-modal-heading" class="font-heading text-base font-bold text-white">Schedule Session / Block</h3>
-            <p class="text-xs text-zinc-400">Structure your timer mode, duration & order</p>
+            <h3 id="task-modal-heading" class="font-heading text-base font-bold text-white">Plan Structured Task</h3>
+            <p class="text-[11px] text-zinc-400">Organize work, breaks & lunch from start to finish</p>
           </div>
           <button type="button" id="close-task-modal-btn" class="p-2 rounded-full bg-white/10 text-zinc-400 hover:text-white transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -562,78 +552,108 @@
 
         <input type="hidden" id="editing-task-id" value="" />
 
-        <div class="space-y-3.5">
-          <!-- Structured Timer Type Dropdown + Duration -->
-          <div class="grid grid-cols-5 gap-2.5">
-            <div class="col-span-3">
-              <label for="task-timer-mode-select" class="block text-xs font-semibold text-zinc-300 mb-1">Timer Type</label>
-              <div class="relative">
-                <select id="task-timer-mode-select"
-                  class="w-full appearance-none px-3.5 py-2.5 pr-8 rounded-xl bg-zinc-900/90 border border-white/15 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-rose-500">
-                  <option value="focus">🎯 Focus (Work Session)</option>
-                  <option value="short">☕ Short Rest (Break)</option>
-                  <option value="long">🌿 Long Rest</option>
-                  <option value="lunch">🍽️ Lunch Break</option>
-                </select>
-                <svg class="w-4 h-4 text-zinc-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-
-            <div class="col-span-2">
-              <label for="task-custom-duration-input" class="block text-xs font-semibold text-zinc-300 mb-1">Duration (min)</label>
-              <input id="task-custom-duration-input" type="number" min="1" max="180" value="25"
-                class="w-full px-3 py-2.5 rounded-xl bg-zinc-900/90 border border-white/15 text-sm font-mono font-bold text-white focus:outline-none focus:ring-2 focus:ring-rose-500" />
-            </div>
-          </div>
-
-          <!-- Task / Block Title -->
+        <!-- Scrollable Form Body -->
+        <div class="space-y-3 overflow-y-auto pr-0.5 flex-1">
+          <!-- Task Title -->
           <div>
-            <label for="task-title-input" class="block text-xs font-semibold text-zinc-300 mb-1">Block Label / Task Title</label>
-            <input id="task-title-input" type="text" required placeholder="e.g., Deep Work Sprint, Coffee Break, or Lunch"
+            <label for="task-title-input" class="block text-[11px] font-semibold text-zinc-300 mb-1">Task Title / Goal</label>
+            <input id="task-title-input" type="text" required placeholder="e.g., Q4 Strategy Deck or Deep Coding Sprint"
               class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900/90 border border-white/15 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500" />
           </div>
 
-          <!-- Date & Target Cycles -->
+          <!-- Date & Optional Reminder Row -->
           <div class="grid grid-cols-2 gap-2.5">
             <div>
-              <label for="task-date-input" class="block text-xs font-semibold text-zinc-300 mb-1">Date</label>
+              <label for="task-date-input" class="block text-[11px] font-semibold text-zinc-300 mb-1">Scheduled Date</label>
               <input id="task-date-input" type="date" required
-                class="w-full px-3 py-2.5 rounded-xl bg-zinc-900/90 border border-white/15 text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
+                class="w-full px-3 py-2 rounded-xl bg-zinc-900/90 border border-white/15 text-xs text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
             </div>
+
             <div>
-              <label for="task-pomo-input" class="block text-xs font-semibold text-zinc-300 mb-1">Target Sessions</label>
-              <input id="task-pomo-input" type="number" min="1" max="12" value="1"
-                class="w-full px-3 py-2.5 rounded-xl bg-zinc-900/90 border border-white/15 text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-rose-500" />
+              <div class="flex items-center justify-between mb-1">
+                <label for="task-time-input" class="text-[11px] font-semibold text-zinc-300">Reminder</label>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input id="task-reminder-toggle" type="checkbox" class="sr-only peer" />
+                  <div class="w-7 h-4 bg-zinc-700 rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-rose-500"></div>
+                </label>
+              </div>
+              <div id="reminder-time-wrapper" class="opacity-40 pointer-events-none transition">
+                <input id="task-time-input" type="time"
+                  class="w-full px-3 py-2 rounded-xl bg-zinc-900/90 border border-white/15 text-xs font-mono font-semibold text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
+              </div>
             </div>
           </div>
 
-          <!-- Reminder Toggle & Time Picker -->
-          <div class="p-3 rounded-2xl bg-white/[0.04] border border-white/10">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <span class="text-xs font-semibold text-zinc-200">Optional Reminder Alert</span>
+          <!-- Timer Structure Builder Section -->
+          <div class="p-3 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">Timer Structure (Work → Finish)</span>
+              <!-- Starter Presets -->
+              <div class="flex items-center gap-1">
+                <button type="button" data-preset="classic" class="px-2 py-0.5 rounded-md bg-white/[0.07] hover:bg-white/15 text-[10px] font-semibold text-zinc-300 transition" title="Populate 4x Focus + Short & Long Rest">
+                  4x Pomo
+                </button>
+                <button type="button" data-preset="halfday" class="px-2 py-0.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/25 text-[10px] font-semibold text-amber-300 transition" title="Populate Focus + Rest + Lunch + Focus">
+                  + Lunch Day
+                </button>
               </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input id="task-reminder-toggle" type="checkbox" class="sr-only peer" />
-                <div class="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-400 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-500"></div>
-              </label>
             </div>
 
-            <div id="reminder-time-wrapper" class="mt-2.5 pt-2.5 border-t border-white/10 flex items-center justify-between opacity-40 pointer-events-none">
-              <label for="task-time-input" class="text-xs text-zinc-400">Alert Time</label>
-              <input id="task-time-input" type="time"
-                class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-white/15 text-sm font-mono font-semibold text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
+            <!-- Quick-Add Pills -->
+            <div class="grid grid-cols-4 gap-1.5">
+              <button type="button" data-modal-quick="focus" class="py-1.5 px-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-[10px] font-bold transition active:scale-95">
+                + Focus
+              </button>
+              <button type="button" data-modal-quick="short" class="py-1.5 px-1 rounded-lg bg-teal-500/15 hover:bg-teal-500/25 border border-teal-500/30 text-teal-300 text-[10px] font-bold transition active:scale-95">
+                + Rest
+              </button>
+              <button type="button" data-modal-quick="long" class="py-1.5 px-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold transition active:scale-95">
+                + Long
+              </button>
+              <button type="button" data-modal-quick="lunch" class="py-1.5 px-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-[10px] font-bold transition active:scale-95">
+                + Lunch
+              </button>
             </div>
+
+            <!-- Custom Dropdown + Duration Adder -->
+            <div class="flex items-center gap-1.5">
+              <div class="relative flex-1">
+                <select id="modal-block-mode-select"
+                  class="w-full appearance-none px-2.5 py-1.5 pr-7 rounded-lg bg-zinc-900 border border-white/15 text-[11px] font-medium text-white focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  <option value="focus">🎯 Focus (Work)</option>
+                  <option value="short">☕ Short Rest</option>
+                  <option value="long">🌿 Long Rest</option>
+                  <option value="lunch">🍽️ Lunch Break</option>
+                </select>
+                <svg class="w-3.5 h-3.5 text-zinc-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              <input id="modal-block-dur-input" type="number" min="1" max="180" value="25"
+                class="w-14 px-2 py-1.5 rounded-lg bg-zinc-900 border border-white/15 text-[11px] font-mono font-bold text-center text-white focus:outline-none focus:ring-1 focus:ring-rose-500"
+                title="Block minutes" />
+              <button type="button" id="modal-add-custom-block-btn" class="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white transition shrink-0">
+                Add
+              </button>
+            </div>
+
+            <!-- Live Structure Summary Strip -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/[0.06] text-[10px]">
+              <div class="flex items-center gap-2">
+                <span class="text-zinc-400"><strong id="modal-sum-blocks" class="text-white font-mono">0</strong> blocks</span>
+                <span class="text-rose-300">🎯 <strong id="modal-sum-focus" class="font-mono">0m</strong></span>
+                <span class="text-teal-300">☕ <strong id="modal-sum-break" class="font-mono">0m</strong></span>
+              </div>
+              <span class="text-zinc-400 font-mono">End ~<strong id="modal-sum-end" class="text-zinc-200">--:--</strong></span>
+            </div>
+
+            <!-- Ordered Sequence List inside Modal -->
+            <div id="modal-blocks-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-0.5"></div>
           </div>
         </div>
 
-        <button id="save-task-submit-btn" type="submit" class="w-full mt-5 py-3.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-heading text-xs uppercase tracking-wider font-bold shadow-lg shadow-rose-500/25 transition active:scale-95">
-          Add to Schedule Queue
+        <button id="save-task-submit-btn" type="submit" class="w-full mt-3.5 py-3.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-heading text-xs uppercase tracking-wider font-bold shadow-lg shadow-rose-500/25 transition active:scale-95 shrink-0">
+          Save Structured Task
         </button>
       </form>
     </div>
@@ -642,8 +662,9 @@
 
   <script>
     /**
-     * FocusFlow Mobile Pomodoro & Manual Sequence Planner
-     * Self-contained, defensive state & DOM controller with zero runtime errors.
+     * FocusFlow Mobile Pomodoro & Unified Task Structure Planner
+     * Each scheduled task holds its own complete ordered sequence of timer blocks
+     * from start to finish (Focus, Short Rest, Long Rest, Lunch Break).
      */
     (function () {
       'use strict';
@@ -652,14 +673,14 @@
       // 1. CONSTANTS & THEME CONFIGURATION
       // =========================================================================
       const STORAGE_KEYS = {
-        DURATIONS: 'focusflow_durations_v4',
-        LONG_INTERVAL: 'focusflow_long_interval_v4',
-        AUTO_PLAY: 'focusflow_autoplay_v4',
-        QUEUE_MODE: 'focusflow_queue_mode_v4',
-        TASKS: 'focusflow_tasks_v4',
-        ACTIVE_TASK: 'focusflow_active_task_v4',
-        SESSIONS: 'focusflow_sessions_v4',
-        SOUND: 'focusflow_sound_v4',
+        DURATIONS: 'focusflow_durations_v5',
+        LONG_INTERVAL: 'focusflow_long_interval_v5',
+        AUTO_PLAY: 'focusflow_autoplay_v5',
+        QUEUE_MODE: 'focusflow_queue_mode_v5',
+        TASKS: 'focusflow_structured_tasks_v5',
+        ACTIVE_TASK: 'focusflow_active_task_v5',
+        SESSIONS: 'focusflow_sessions_v5',
+        SOUND: 'focusflow_sound_v5',
       };
 
       const DEFAULT_DURATIONS = {
@@ -675,7 +696,7 @@
         focus: {
           label: 'Focus Session',
           shortLabel: 'Focus',
-          defaultTitle: 'Focus Work Session',
+          defaultNote: 'Work block',
           startText: 'Start Focus',
           ringColor: '#F43F5E',
           badgeBg: 'bg-rose-500',
@@ -688,8 +709,8 @@
         },
         short: {
           label: 'Short Rest',
-          shortLabel: 'Short Rest',
-          defaultTitle: 'Short Rest Break',
+          shortLabel: 'Rest',
+          defaultNote: 'Quick recharge',
           startText: 'Start Rest',
           ringColor: '#2DD4BF',
           badgeBg: 'bg-teal-500',
@@ -703,7 +724,7 @@
         long: {
           label: 'Long Rest',
           shortLabel: 'Long Rest',
-          defaultTitle: 'Long Recovery Rest',
+          defaultNote: 'Deep recovery',
           startText: 'Start Long Rest',
           ringColor: '#818CF8',
           badgeBg: 'bg-indigo-500',
@@ -716,8 +737,8 @@
         },
         lunch: {
           label: 'Lunch Break',
-          shortLabel: 'Lunch Break',
-          defaultTitle: 'Lunch Break',
+          shortLabel: 'Lunch',
+          defaultNote: 'Midday meal',
           startText: 'Start Lunch',
           ringColor: '#FBBF24',
           badgeBg: 'bg-amber-500',
@@ -730,10 +751,10 @@
         },
       };
 
-      const CIRCUMFERENCE = 2 * Math.PI * 106; // ~666.02
+      const CIRCUMFERENCE = 2 * Math.PI * 106;
 
       // =========================================================================
-      // 2. DATE & TIME HELPERS
+      // 2. DATE, TIME & BLOCK HELPERS
       // =========================================================================
       function toLocalDateStr(dateObj) {
         const y = dateObj.getFullYear();
@@ -772,8 +793,20 @@
         return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
       }
 
+      function createBlock(mode, duration, note = '') {
+        const validMode = MODE_CONFIG[mode] ? mode : 'focus';
+        const dur = Math.max(1, Math.min(180, Number(duration) || DEFAULT_DURATIONS[validMode]));
+        return {
+          id: 'blk-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+          mode: validMode,
+          duration: dur,
+          note: String(note || '').trim(),
+          completed: false,
+        };
+      }
+
       // =========================================================================
-      // 3. SAFE LOCALSTORAGE PERSISTENCE
+      // 3. SAFE LOCALSTORAGE PERSISTENCE & INITIAL SEED DATA
       // =========================================================================
       function loadJSON(key, fallback) {
         try {
@@ -790,8 +823,23 @@
         try {
           localStorage.setItem(key, JSON.stringify(val));
         } catch (e) {
-          // Silently ignore storage quota / privacy mode restrictions
+          // Ignore storage quota errors
         }
+      }
+
+      function sanitizeBlocks(blocks) {
+        if (!Array.isArray(blocks) || blocks.length === 0) {
+          return [createBlock('focus', 25, 'Deep focus')];
+        }
+        return blocks
+          .filter((b) => b && typeof b === 'object')
+          .map((b, idx) => ({
+            id: String(b.id || `blk-${idx}-${Date.now()}`),
+            mode: MODE_CONFIG[b.mode] ? b.mode : 'focus',
+            duration: Math.max(1, Math.min(180, Number(b.duration) || 25)),
+            note: String(b.note || ''),
+            completed: Boolean(b.completed),
+          }));
       }
 
       function getInitialTasks() {
@@ -799,79 +847,54 @@
         if (Array.isArray(stored)) {
           return stored
             .filter((item) => item && typeof item === 'object')
-            .map((t, idx) => ({
-              id: String(t.id || `task-restored-${idx}`),
-              title: String(t.title || 'Untitled Block'),
-              date: String(t.date || getTodayStr()),
-              orderIndex: typeof t.orderIndex === 'number' && !isNaN(t.orderIndex) ? t.orderIndex : idx,
-              timerMode: MODE_CONFIG[t.timerMode] ? t.timerMode : 'focus',
-              customDuration: Math.max(1, Math.min(180, Number(t.customDuration) || 25)),
-              reminderEnabled: Boolean(t.reminderEnabled),
-              reminderTime: String(t.reminderTime || '09:00'),
-              reminded: Boolean(t.reminded),
-              completed: Boolean(t.completed),
-              estPomos: Math.max(1, Number(t.estPomos) || 1),
-              completedPomos: Math.max(0, Number(t.completedPomos) || 0),
-            }));
+            .map((t, idx) => {
+              const blocks = sanitizeBlocks(t.blocks);
+              const allDone = blocks.every((b) => b.completed);
+              return {
+                id: String(t.id || `stask-${idx}`),
+                title: String(t.title || 'Untitled Structured Task'),
+                date: String(t.date || getTodayStr()),
+                reminderEnabled: Boolean(t.reminderEnabled),
+                reminderTime: String(t.reminderTime || '09:00'),
+                reminded: Boolean(t.reminded),
+                completed: Boolean(t.completed) || allDone,
+                blocks,
+              };
+            });
         }
 
         const today = getTodayStr();
         const sampleTasks = [
           {
-            id: 'task-seq-1',
-            title: 'Deep work: System architecture & API design',
+            id: 'stask-sample-1',
+            title: 'Product Architecture & UI Sprint',
             date: today,
-            orderIndex: 0,
-            timerMode: 'focus',
-            customDuration: 25,
             reminderEnabled: false,
-            reminderTime: getFutureHHMM(15),
+            reminderTime: getFutureHHMM(20),
             reminded: false,
             completed: false,
-            estPomos: 1,
-            completedPomos: 0,
+            blocks: [
+              createBlock('focus', 25, 'API schema & data flow'),
+              createBlock('short', 5, 'Stretch & hydrate'),
+              createBlock('focus', 25, 'Component UI build'),
+              createBlock('lunch', 45, 'Lunch & walk outside'),
+              createBlock('focus', 25, 'End-to-end polish'),
+              createBlock('long', 15, 'Wrap-up & notes'),
+            ],
           },
           {
-            id: 'task-seq-2',
-            title: 'Stretch & hydrate break',
+            id: 'stask-sample-2',
+            title: 'Code Review & Documentation',
             date: today,
-            orderIndex: 1,
-            timerMode: 'short',
-            customDuration: 5,
-            reminderEnabled: false,
-            reminderTime: '10:30',
-            reminded: false,
-            completed: false,
-            estPomos: 1,
-            completedPomos: 0,
-          },
-          {
-            id: 'task-seq-3',
-            title: 'Frontend UI polish & testing',
-            date: today,
-            orderIndex: 2,
-            timerMode: 'focus',
-            customDuration: 25,
-            reminderEnabled: false,
-            reminderTime: '11:00',
-            reminded: false,
-            completed: false,
-            estPomos: 1,
-            completedPomos: 0,
-          },
-          {
-            id: 'task-seq-4',
-            title: 'Midday recharge & lunch break',
-            date: today,
-            orderIndex: 3,
-            timerMode: 'lunch',
-            customDuration: 45,
             reminderEnabled: true,
-            reminderTime: '13:30',
+            reminderTime: '16:00',
             reminded: false,
             completed: false,
-            estPomos: 1,
-            completedPomos: 0,
+            blocks: [
+              createBlock('focus', 25, 'PR reviews'),
+              createBlock('short', 5, 'Coffee break'),
+              createBlock('focus', 25, 'Release notes'),
+            ],
           },
         ];
         saveJSON(STORAGE_KEYS.TASKS, sampleTasks);
@@ -888,7 +911,7 @@
         },
         longRestInterval: Math.max(2, Math.min(10, Number(loadJSON(STORAGE_KEYS.LONG_INTERVAL, DEFAULT_LONG_INTERVAL)) || DEFAULT_LONG_INTERVAL)),
         autoPlay: Boolean(loadJSON(STORAGE_KEYS.AUTO_PLAY, true)),
-        useDayQueue: Boolean(loadJSON(STORAGE_KEYS.QUEUE_MODE, true)),
+        useTaskStructure: Boolean(loadJSON(STORAGE_KEYS.QUEUE_MODE, true)),
         mode: 'focus',
         secondsLeft: 25 * 60,
         totalSeconds: 25 * 60,
@@ -901,21 +924,20 @@
         })(),
         cycleFocusCount: 0,
         tasks: getInitialTasks(),
-        activeTaskId: loadJSON(STORAGE_KEYS.ACTIVE_TASK, 'task-seq-1'),
+        activeTaskId: loadJSON(STORAGE_KEYS.ACTIVE_TASK, 'stask-sample-1'),
+        activeBlockId: null,
         selectedDate: getTodayStr(),
         calendarMonth: new Date().getMonth(),
         calendarYear: new Date().getFullYear(),
         activeTab: 'timer',
         activeBannerTaskId: null,
         toastTimeout: null,
-        draggedTaskId: null,
+        modalDraftBlocks: [],
+        modalDraggedIndex: null,
       };
 
-      state.secondsLeft = state.durations.focus * 60;
-      state.totalSeconds = state.durations.focus * 60;
-
       // =========================================================================
-      // 4. SAFE WEB AUDIO API CHIME GENERATOR
+      // 4. WEB AUDIO CHIME & SYSTEM NOTIFICATION HELPERS
       // =========================================================================
       let audioCtx = null;
 
@@ -945,6 +967,8 @@
           const notes =
             type === 'reminder'
               ? [587.33, 880, 1174.66]
+              : type === 'complete'
+              ? [523.25, 659.25, 783.99, 1046.5, 1318.5]
               : type === 'break'
               ? [659.25, 523.25, 783.99]
               : [523.25, 659.25, 783.99, 1046.5];
@@ -953,31 +977,77 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, now + idx * 0.13);
+            osc.frequency.setValueAtTime(freq, now + idx * 0.12);
 
-            gain.gain.setValueAtTime(0.0001, now + idx * 0.13);
-            gain.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.13 + 0.03);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.13 + 0.85);
+            gain.gain.setValueAtTime(0.0001, now + idx * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.12 + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.12 + 0.85);
 
             osc.connect(gain);
             gain.connect(audioCtx.destination);
 
-            osc.start(now + idx * 0.13);
-            osc.stop(now + idx * 0.13 + 0.9);
+            osc.start(now + idx * 0.12);
+            osc.stop(now + idx * 0.12 + 0.9);
           });
         } catch (err) {
-          // Safe fallback if browser restricts audio playback
+          // Ignore audio restrictions
+        }
+      }
+
+      function sendSystemNotification(title, body) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          try {
+            new Notification(title, { body });
+          } catch (e) {}
+        }
+      }
+
+      function updateNotificationBadgeUI() {
+        const dot = document.getElementById('notif-status-dot');
+        const btn = document.getElementById('notif-toggle-btn');
+        if (!dot || !btn) return;
+        if ('Notification' in window && Notification.permission === 'granted') {
+          dot.classList.remove('hidden');
+          btn.title = 'System notifications enabled';
+        } else {
+          dot.classList.add('hidden');
+          btn.title = 'Tap to enable system notifications';
+        }
+      }
+
+      async function requestSystemNotifications() {
+        if (!('Notification' in window)) {
+          showTransitionToast('lunch', 'On iPhone: Tap Share → Add to Home Screen first');
+          return;
+        }
+        if (Notification.permission === 'granted') {
+          sendSystemNotification('FocusFlow Active', 'System timer and task alerts are enabled.');
+          showTransitionToast('focus', 'System notifications are already enabled');
+          return;
+        }
+        try {
+          const perm = await Notification.requestPermission();
+          updateNotificationBadgeUI();
+          if (perm === 'granted') {
+            sendSystemNotification('FocusFlow Ready', 'You will receive alerts as each block completes.');
+            showTransitionToast('focus', 'System notifications enabled!');
+          } else {
+            showTransitionToast('lunch', 'Notifications blocked in browser settings');
+          }
+        } catch (e) {
+          showTransitionToast('lunch', 'Unable to request notification permission');
         }
       }
 
       // =========================================================================
-      // 5. DOM REFERENCES & SAFE HELPER
+      // 5. DOM REFERENCES
       // =========================================================================
       const dom = {
         ambientGlow: document.getElementById('ambient-glow'),
         headerDateLabel: document.getElementById('header-date-label'),
         brandBadge: document.getElementById('brand-badge'),
         sessionCountLabel: document.getElementById('session-count-label'),
+        notifToggleBtn: document.getElementById('notif-toggle-btn'),
         soundToggleBtn: document.getElementById('sound-toggle-btn'),
         iconSoundOn: document.getElementById('icon-sound-on'),
         iconSoundOff: document.getElementById('icon-sound-off'),
@@ -1012,10 +1082,11 @@
 
         switchToPlannerBtn: document.getElementById('switch-to-planner-btn'),
         completeActiveTaskBtn: document.getElementById('complete-active-task-btn'),
+        editActiveTaskBtn: document.getElementById('edit-active-task-btn'),
         activeTaskTitle: document.getElementById('active-task-title'),
         activeTaskMeta: document.getElementById('active-task-meta'),
         activeTaskModeBadge: document.getElementById('active-task-mode-badge'),
-        activeTaskPomo: document.getElementById('active-task-pomo'),
+        activeTaskBlockNote: document.getElementById('active-task-block-note'),
 
         viewPlanner: document.getElementById('view-planner'),
         calendarMonthYear: document.getElementById('calendar-month-year'),
@@ -1025,13 +1096,7 @@
         calNextBtn: document.getElementById('cal-next-btn'),
         selectedDateHeading: document.getElementById('selected-date-heading'),
         selectedDateSubtext: document.getElementById('selected-date-subtext'),
-        runDaySequenceBtn: document.getElementById('run-day-sequence-btn'),
         openAddTaskBtn: document.getElementById('open-add-task-btn'),
-        quickAddBtns: document.querySelectorAll('[data-quick-add]'),
-        timelineSummaryBar: document.getElementById('timeline-summary-bar'),
-        summaryFocusMins: document.getElementById('summary-focus-mins'),
-        summaryBreakMins: document.getElementById('summary-break-mins'),
-        summaryEndTime: document.getElementById('summary-end-time'),
         taskListContainer: document.getElementById('task-list-container'),
 
         navTabBtns: document.querySelectorAll('.nav-tab-btn'),
@@ -1056,13 +1121,20 @@
         addTaskForm: document.getElementById('add-task-form'),
         closeTaskModalBtn: document.getElementById('close-task-modal-btn'),
         taskTitleInput: document.getElementById('task-title-input'),
-        taskTimerModeSelect: document.getElementById('task-timer-mode-select'),
-        taskCustomDurationInput: document.getElementById('task-custom-duration-input'),
         taskDateInput: document.getElementById('task-date-input'),
-        taskPomoInput: document.getElementById('task-pomo-input'),
         taskReminderToggle: document.getElementById('task-reminder-toggle'),
         reminderTimeWrapper: document.getElementById('reminder-time-wrapper'),
         taskTimeInput: document.getElementById('task-time-input'),
+        modalQuickBtns: document.querySelectorAll('[data-modal-quick]'),
+        presetBtns: document.querySelectorAll('[data-preset]'),
+        modalBlockModeSelect: document.getElementById('modal-block-mode-select'),
+        modalBlockDurInput: document.getElementById('modal-block-dur-input'),
+        modalAddCustomBlockBtn: document.getElementById('modal-add-custom-block-btn'),
+        modalSumBlocks: document.getElementById('modal-sum-blocks'),
+        modalSumFocus: document.getElementById('modal-sum-focus'),
+        modalSumBreak: document.getElementById('modal-sum-break'),
+        modalSumEnd: document.getElementById('modal-sum-end'),
+        modalBlocksList: document.getElementById('modal-blocks-list'),
         saveTaskSubmitBtn: document.getElementById('save-task-submit-btn'),
 
         reminderBanner: document.getElementById('reminder-banner'),
@@ -1078,21 +1150,61 @@
         }
       }
 
-      // =========================================================================
-      // 6. MANUAL SEQUENCE QUEUE HELPERS
-      // =========================================================================
-      function getOrderedTasksForDate(dateStr) {
-        return state.tasks
-          .filter((t) => t && t.date === dateStr)
-          .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
+      function escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str ?? '');
+        return div.innerHTML;
       }
 
-      function normalizeOrderIndices(dateStr) {
-        const dayTasks = getOrderedTasksForDate(dateStr);
-        dayTasks.forEach((task, index) => {
-          task.orderIndex = index;
-        });
-        saveJSON(STORAGE_KEYS.TASKS, state.tasks);
+      // =========================================================================
+      // 6. ACTIVE STRUCTURED TASK & SEQUENCE RESOLUTION
+      // =========================================================================
+      function getActiveStructuredTaskState() {
+        if (!state.useTaskStructure) {
+          return { active: false, task: null, blocks: [], currentIndex: -1, currentBlock: null, nextBlock: null };
+        }
+
+        const task = state.tasks.find((t) => t && t.id === state.activeTaskId && !t.completed);
+        if (!task || !Array.isArray(task.blocks) || task.blocks.length === 0) {
+          return { active: false, task: null, blocks: [], currentIndex: -1, currentBlock: null, nextBlock: null };
+        }
+
+        let currentIdx = task.blocks.findIndex((b) => b.id === state.activeBlockId && !b.completed);
+        if (currentIdx === -1) {
+          currentIdx = task.blocks.findIndex((b) => !b.completed);
+        }
+
+        if (currentIdx === -1) {
+          return { active: false, task, blocks: task.blocks, currentIndex: -1, currentBlock: null, nextBlock: null };
+        }
+
+        const currentBlock = task.blocks[currentIdx];
+        let nextBlock = null;
+        for (let i = currentIdx + 1; i < task.blocks.length; i++) {
+          if (!task.blocks[i].completed) {
+            nextBlock = task.blocks[i];
+            break;
+          }
+        }
+
+        return {
+          active: true,
+          task,
+          blocks: task.blocks,
+          currentIndex: currentIdx,
+          currentBlock,
+          nextBlock,
+        };
+      }
+
+      function syncTimerToActiveTaskIfIdle() {
+        const info = getActiveStructuredTaskState();
+        if (info.active && info.currentBlock) {
+          state.activeBlockId = info.currentBlock.id;
+          state.mode = info.currentBlock.mode;
+          state.totalSeconds = info.currentBlock.duration * 60;
+          state.secondsLeft = state.totalSeconds;
+        }
       }
 
       function getNextDefaultModeInCycle() {
@@ -1103,45 +1215,8 @@
         return 'focus';
       }
 
-      function getUpcomingQueueInfo() {
-        const activeT = state.tasks.find((t) => t && t.id === state.activeTaskId);
-        const queueDate = activeT ? activeT.date : state.selectedDate;
-        const dayTasks = getOrderedTasksForDate(queueDate);
-
-        if (state.useDayQueue && dayTasks.length > 0) {
-          const currentIdx = dayTasks.findIndex((t) => t.id === state.activeTaskId);
-          if (currentIdx !== -1) {
-            for (let i = currentIdx + 1; i < dayTasks.length; i++) {
-              if (!dayTasks[i].completed) {
-                return {
-                  isQueue: true,
-                  dayTasks,
-                  currentIndex: currentIdx,
-                  nextTask: dayTasks[i],
-                };
-              }
-            }
-            return {
-              isQueue: true,
-              dayTasks,
-              currentIndex: currentIdx,
-              nextTask: null,
-            };
-          } else {
-            const firstUncompleted = dayTasks.find((t) => !t.completed) || null;
-            return {
-              isQueue: true,
-              dayTasks,
-              currentIndex: -1,
-              nextTask: firstUncompleted,
-            };
-          }
-        }
-        return { isQueue: false, dayTasks: [], currentIndex: -1, nextTask: null };
-      }
-
       // =========================================================================
-      // 7. CONTINUOUS AUTO-PLAY CYCLE ENGINE & UI
+      // 7. TIMER ENGINE & AUTO-ADVANCE THROUGH TASK STRUCTURE
       // =========================================================================
       function showTransitionToast(modeKey, customLabel = null) {
         if (!dom.transitionToast || !dom.toastDot || !dom.toastMessage) return;
@@ -1185,38 +1260,38 @@
           }
         }
 
-        const qInfo = getUpcomingQueueInfo();
+        const tInfo = getActiveStructuredTaskState();
 
-        if (qInfo.isQueue) {
+        if (tInfo.active) {
           if (dom.queueModeBadgeDot) dom.queueModeBadgeDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
-          if (dom.queueModeLabel) dom.queueModeLabel.textContent = 'Custom Day Queue';
+          if (dom.queueModeLabel) dom.queueModeLabel.textContent = 'Task Structure';
 
           if (dom.cycleDotsContainer) {
-            let dotsHtml = '';
-            qInfo.dayTasks.forEach((t, idx) => {
-              const mCfg = MODE_CONFIG[t.timerMode] || MODE_CONFIG.focus;
-              const isCurrent = idx === qInfo.currentIndex;
-              dotsHtml += `<span class="w-2 h-2 rounded-full ${
-                t.completed
-                  ? 'bg-zinc-600 opacity-50'
-                  : isCurrent
-                  ? `${mCfg.dotColor} ring-2 ring-white/60 scale-110`
-                  : `${mCfg.dotColor} opacity-60`
-              }"></span>`;
-            });
-            dom.cycleDotsContainer.innerHTML = dotsHtml;
+            dom.cycleDotsContainer.innerHTML = tInfo.blocks
+              .map((blk, idx) => {
+                const mCfg = MODE_CONFIG[blk.mode] || MODE_CONFIG.focus;
+                const isCurrent = idx === tInfo.currentIndex;
+                return `<span class="h-1.5 rounded-full transition-all ${
+                  blk.completed
+                    ? 'w-2 bg-zinc-600 opacity-50'
+                    : isCurrent
+                    ? `w-4 ${mCfg.dotColor} ring-1 ring-white/70`
+                    : `w-2 ${mCfg.dotColor} opacity-65`
+                }" title="Step ${idx + 1}: ${mCfg.shortLabel} (${blk.duration}m)"></span>`;
+              })
+              .join('');
           }
 
-          const posNum = qInfo.currentIndex >= 0 ? qInfo.currentIndex + 1 : 1;
-          if (dom.queueProgressText) dom.queueProgressText.textContent = `Block ${posNum}/${qInfo.dayTasks.length}`;
+          if (dom.queueProgressText) {
+            dom.queueProgressText.textContent = `Step ${tInfo.currentIndex + 1}/${tInfo.blocks.length}`;
+          }
 
           if (dom.nextUpLabel) {
-            if (qInfo.nextTask) {
-              const nCfg = MODE_CONFIG[qInfo.nextTask.timerMode] || MODE_CONFIG.focus;
-              const nDur = qInfo.nextTask.customDuration || state.durations[qInfo.nextTask.timerMode] || 25;
-              dom.nextUpLabel.textContent = `Next: ${nCfg.shortLabel} (${nDur}m)`;
+            if (tInfo.nextBlock) {
+              const nCfg = MODE_CONFIG[tInfo.nextBlock.mode] || MODE_CONFIG.focus;
+              dom.nextUpLabel.textContent = `Next: ${nCfg.shortLabel} ${tInfo.nextBlock.duration}m`;
             } else {
-              dom.nextUpLabel.textContent = 'End of Queue';
+              dom.nextUpLabel.textContent = 'Final Step';
             }
           }
         } else {
@@ -1315,10 +1390,10 @@
 
       function stopAndResetTimer() {
         pauseTimer();
-        const activeTask = state.tasks.find((t) => t.id === state.activeTaskId && !t.completed);
+        const tInfo = getActiveStructuredTaskState();
         const mins =
-          activeTask && activeTask.timerMode === state.mode && activeTask.customDuration
-            ? activeTask.customDuration
+          tInfo.active && tInfo.currentBlock && tInfo.currentBlock.mode === state.mode
+            ? tInfo.currentBlock.duration
             : state.durations[state.mode];
         state.totalSeconds = mins * 60;
         state.secondsLeft = state.totalSeconds;
@@ -1346,7 +1421,7 @@
 
       function advanceToNextSession(wasSkipped = false) {
         const finishedMode = state.mode;
-        const currentTask = state.tasks.find((t) => t.id === state.activeTaskId);
+        const tInfo = getActiveStructuredTaskState();
 
         if (!wasSkipped) {
           if (finishedMode === 'focus') {
@@ -1360,53 +1435,61 @@
             }
             playChime('transition');
           }
-
-          if (currentTask && !currentTask.completed) {
-            currentTask.completedPomos = (currentTask.completedPomos || 0) + 1;
-            if (state.useDayQueue && currentTask.completedPomos >= (currentTask.estPomos || 1)) {
-              currentTask.completed = true;
-            }
-            saveJSON(STORAGE_KEYS.TASKS, state.tasks);
-          }
         }
 
-        const qInfo = getUpcomingQueueInfo();
-        if (qInfo.isQueue) {
-          if (qInfo.nextTask) {
-            const nextT = qInfo.nextTask;
-            state.activeTaskId = nextT.id;
-            saveJSON(STORAGE_KEYS.ACTIVE_TASK, nextT.id);
+        // 1. If playing through a Unified Structured Task
+        if (tInfo.active && tInfo.task && tInfo.currentBlock) {
+          tInfo.currentBlock.completed = true;
 
-            const targetMode = nextT.timerMode && MODE_CONFIG[nextT.timerMode] ? nextT.timerMode : 'focus';
-            const targetDur = nextT.customDuration || state.durations[targetMode];
+          if (tInfo.nextBlock) {
+            state.activeBlockId = tInfo.nextBlock.id;
+            saveJSON(STORAGE_KEYS.TASKS, state.tasks);
+
+            const nextBlk = tInfo.nextBlock;
+            const nCfg = MODE_CONFIG[nextBlk.mode] || MODE_CONFIG.focus;
             const shouldPlay = wasSkipped ? state.isRunning : state.autoPlay;
+            const stepNum = tInfo.task.blocks.findIndex((b) => b.id === nextBlk.id) + 1;
+            const labelText = `Step ${stepNum}/${tInfo.task.blocks.length}: ${nCfg.shortLabel} (${nextBlk.duration}m)`;
 
             renderActiveTaskCard();
             renderCalendar();
             renderTasksForSelectedDate();
 
-            switchMode(
-              targetMode,
-              targetDur,
-              shouldPlay,
-              `Next Block: ${nextT.title} (${targetDur}m)`
-            );
+            if (!wasSkipped) {
+              sendSystemNotification(`${tInfo.task.title}`, `Up next: ${labelText}`);
+            }
+
+            switchMode(nextBlk.mode, nextBlk.duration, shouldPlay, labelText);
             if (!shouldPlay) pauseTimer();
             return;
           } else {
+            // Entire Structured Task Finished!
+            tInfo.task.completed = true;
+            state.activeBlockId = null;
+            saveJSON(STORAGE_KEYS.TASKS, state.tasks);
+
             pauseTimer();
+            playChime('complete');
             renderActiveTaskCard();
             renderCalendar();
             renderTasksForSelectedDate();
-            showTransitionToast('focus', 'Custom Day Queue Completed!');
+            updateTimerUI();
+
+            sendSystemNotification('Task Completed!', `Finished all blocks for "${tInfo.task.title}".`);
+            showTransitionToast('focus', `Completed: ${tInfo.task.title}!`);
             return;
           }
         }
 
+        // 2. Fallback: Default Loop Mode
         const nextMode = getNextDefaultModeInCycle();
         const shouldPlay = wasSkipped ? state.isRunning : state.autoPlay;
         renderActiveTaskCard();
         renderTasksForSelectedDate();
+
+        if (!wasSkipped) {
+          sendSystemNotification('Session Complete', `Starting ${MODE_CONFIG[nextMode].label}`);
+        }
 
         if (shouldPlay) {
           switchMode(nextMode, null, true);
@@ -1414,10 +1497,6 @@
           pauseTimer();
           switchMode(nextMode, null, false);
         }
-      }
-
-      function handleTimerComplete() {
-        advanceToNextSession(false);
       }
 
       function startTimer() {
@@ -1438,7 +1517,7 @@
             state.secondsLeft -= 1;
             updateTimerUI();
           } else {
-            handleTimerComplete();
+            advanceToNextSession(false);
           }
         }, 1000);
       }
@@ -1449,9 +1528,9 @@
         state.durations[state.mode] = nextMins;
         saveJSON(STORAGE_KEYS.DURATIONS, state.durations);
 
-        const activeTask = state.tasks.find((t) => t.id === state.activeTaskId && !t.completed);
-        if (activeTask && activeTask.timerMode === state.mode) {
-          activeTask.customDuration = nextMins;
+        const tInfo = getActiveStructuredTaskState();
+        if (tInfo.active && tInfo.currentBlock && tInfo.currentBlock.mode === state.mode) {
+          tInfo.currentBlock.duration = nextMins;
           saveJSON(STORAGE_KEYS.TASKS, state.tasks);
           renderActiveTaskCard();
           renderTasksForSelectedDate();
@@ -1465,22 +1544,26 @@
       }
 
       // =========================================================================
-      // 8. ACTIVE TASK CARD & MANUAL SEQUENCE OPERATIONS
+      // 8. ACTIVE TASK CARD & TASK ACTIONS
       // =========================================================================
       function renderActiveTaskCard() {
+        const tInfo = getActiveStructuredTaskState();
         const task = state.tasks.find((t) => t.id === state.activeTaskId && !t.completed);
+
         if (!task) {
           if (dom.activeTaskTitle) {
-            dom.activeTaskTitle.textContent = 'No active block — tap to schedule or run queue';
+            dom.activeTaskTitle.textContent = 'No active structured task — tap All Tasks';
             dom.activeTaskTitle.classList.add('text-zinc-500');
             dom.activeTaskTitle.classList.remove('text-zinc-100');
           }
           if (dom.activeTaskMeta) dom.activeTaskMeta.classList.add('hidden');
           if (dom.completeActiveTaskBtn) dom.completeActiveTaskBtn.classList.add('opacity-40', 'pointer-events-none');
+          if (dom.editActiveTaskBtn) dom.editActiveTaskBtn.classList.add('hidden');
         } else {
-          const tMode = task.timerMode && MODE_CONFIG[task.timerMode] ? task.timerMode : 'focus';
-          const mCfg = MODE_CONFIG[tMode];
-          const dur = task.customDuration || state.durations[tMode];
+          const blk = tInfo.currentBlock || task.blocks.find((b) => !b.completed) || task.blocks[0];
+          const stepIdx = blk ? task.blocks.findIndex((b) => b.id === blk.id) + 1 : 1;
+          const bMode = blk ? blk.mode : 'focus';
+          const mCfg = MODE_CONFIG[bMode] || MODE_CONFIG.focus;
 
           if (dom.activeTaskTitle) {
             dom.activeTaskTitle.textContent = task.title;
@@ -1488,14 +1571,15 @@
             dom.activeTaskTitle.classList.add('text-zinc-100');
           }
           if (dom.activeTaskModeBadge) {
-            dom.activeTaskModeBadge.textContent = `${mCfg.shortLabel} • ${dur}m`;
-            dom.activeTaskModeBadge.className = `text-[10px] font-semibold px-1.5 py-0.5 rounded ${mCfg.taskBadgeClass}`;
+            dom.activeTaskModeBadge.textContent = `Step ${stepIdx}/${task.blocks.length}: ${mCfg.shortLabel} ${blk ? blk.duration : 25}m`;
+            dom.activeTaskModeBadge.className = `text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0 ${mCfg.taskBadgeClass}`;
           }
-          if (dom.activeTaskPomo) {
-            dom.activeTaskPomo.textContent = `${task.completedPomos || 0}/${task.estPomos || 1} 🍅`;
+          if (dom.activeTaskBlockNote) {
+            dom.activeTaskBlockNote.textContent = blk && blk.note ? blk.note : '';
           }
           if (dom.activeTaskMeta) dom.activeTaskMeta.classList.remove('hidden');
           if (dom.completeActiveTaskBtn) dom.completeActiveTaskBtn.classList.remove('opacity-40', 'pointer-events-none');
+          if (dom.editActiveTaskBtn) dom.editActiveTaskBtn.classList.remove('hidden');
         }
 
         const todayPending = state.tasks.filter((t) => t.date === getTodayStr() && !t.completed).length;
@@ -1515,13 +1599,20 @@
         const task = state.tasks.find((t) => t.id === taskId);
         if (!task) return;
         task.completed = !task.completed;
+        if (task.completed) {
+          task.blocks.forEach((b) => (b.completed = true));
+        } else {
+          task.blocks.forEach((b) => (b.completed = false));
+        }
         saveJSON(STORAGE_KEYS.TASKS, state.tasks);
 
         if (task.completed && state.activeTaskId === taskId) {
-          const orderedDay = getOrderedTasksForDate(task.date);
-          const nextTask = orderedDay.find((t) => !t.completed);
+          pauseTimer();
+          const nextTask = state.tasks.find((t) => t.date === task.date && !t.completed);
           state.activeTaskId = nextTask ? nextTask.id : null;
+          state.activeBlockId = null;
           saveJSON(STORAGE_KEYS.ACTIVE_TASK, state.activeTaskId);
+          syncTimerToActiveTaskIfIdle();
         }
 
         renderActiveTaskCard();
@@ -1534,12 +1625,15 @@
         const target = state.tasks.find((t) => t.id === taskId);
         const dateStr = target ? target.date : state.selectedDate;
         state.tasks = state.tasks.filter((t) => t.id !== taskId);
-        normalizeOrderIndices(dateStr);
+        saveJSON(STORAGE_KEYS.TASKS, state.tasks);
 
         if (state.activeTaskId === taskId) {
-          const remaining = getOrderedTasksForDate(dateStr).find((t) => !t.completed);
+          pauseTimer();
+          const remaining = state.tasks.find((t) => t.date === dateStr && !t.completed);
           state.activeTaskId = remaining ? remaining.id : null;
+          state.activeBlockId = null;
           saveJSON(STORAGE_KEYS.ACTIVE_TASK, state.activeTaskId);
+          syncTimerToActiveTaskIfIdle();
         }
 
         renderActiveTaskCard();
@@ -1548,114 +1642,41 @@
         updateTimerUI();
       }
 
-      function moveTaskInSequence(taskId, direction) {
-        const dayTasks = getOrderedTasksForDate(state.selectedDate);
-        const idx = dayTasks.findIndex((t) => t.id === taskId);
-        if (idx === -1) return;
-
-        const targetIdx = idx + direction;
-        if (targetIdx < 0 || targetIdx >= dayTasks.length) return;
-
-        const temp = dayTasks[idx].orderIndex;
-        dayTasks[idx].orderIndex = dayTasks[targetIdx].orderIndex;
-        dayTasks[targetIdx].orderIndex = temp;
-
-        normalizeOrderIndices(state.selectedDate);
-        renderTasksForSelectedDate();
-        updateTimerUI();
-      }
-
-      function reorderTaskByDrag(sourceId, targetId, insertAfter) {
-        if (!sourceId || !targetId || sourceId === targetId) return;
-        const dayTasks = getOrderedTasksForDate(state.selectedDate);
-        const sourceIdx = dayTasks.findIndex((t) => t.id === sourceId);
-        if (sourceIdx === -1) return;
-
-        const [movedItem] = dayTasks.splice(sourceIdx, 1);
-        let targetIdx = dayTasks.findIndex((t) => t.id === targetId);
-        if (targetIdx === -1) {
-          dayTasks.push(movedItem);
-        } else {
-          if (insertAfter) targetIdx += 1;
-          dayTasks.splice(targetIdx, 0, movedItem);
-        }
-
-        dayTasks.forEach((task, i) => {
-          task.orderIndex = i;
-        });
-        saveJSON(STORAGE_KEYS.TASKS, state.tasks);
-        renderTasksForSelectedDate();
-        updateTimerUI();
-      }
-
-      function quickAddBlock(modeKey) {
-        const validMode = MODE_CONFIG[modeKey] ? modeKey : 'focus';
-        const cfg = MODE_CONFIG[validMode];
-        const dayTasks = getOrderedTasksForDate(state.selectedDate);
-        const dur = state.durations[validMode] || 25;
-
-        const newTask = {
-          id: 'task-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-          title: cfg.defaultTitle,
-          date: state.selectedDate,
-          orderIndex: dayTasks.length,
-          timerMode: validMode,
-          customDuration: dur,
-          reminderEnabled: false,
-          reminderTime: getFutureHHMM(30),
-          reminded: false,
-          completed: false,
-          estPomos: 1,
-          completedPomos: 0,
-        };
-
-        state.tasks.push(newTask);
-        saveJSON(STORAGE_KEYS.TASKS, state.tasks);
-
-        if (!state.activeTaskId && newTask.date === getTodayStr()) {
-          state.activeTaskId = newTask.id;
-          saveJSON(STORAGE_KEYS.ACTIVE_TASK, newTask.id);
-        }
-
-        renderActiveTaskCard();
-        renderCalendar();
-        renderTasksForSelectedDate();
-        updateTimerUI();
-      }
-
-      function startScheduledTaskSession(taskId) {
+      function runStructuredTask(taskId, restartFromBeginning = false) {
         const task = state.tasks.find((t) => t.id === taskId);
-        if (!task) return;
+        if (!task || !Array.isArray(task.blocks) || task.blocks.length === 0) return;
 
-        state.activeTaskId = taskId;
-        state.useDayQueue = true;
-        saveJSON(STORAGE_KEYS.ACTIVE_TASK, taskId);
+        if (restartFromBeginning || task.completed) {
+          task.completed = false;
+          task.blocks.forEach((b) => (b.completed = false));
+        }
+
+        const firstOpenBlock = task.blocks.find((b) => !b.completed) || task.blocks[0];
+        state.activeTaskId = task.id;
+        state.activeBlockId = firstOpenBlock.id;
+        state.useTaskStructure = true;
+
+        saveJSON(STORAGE_KEYS.TASKS, state.tasks);
+        saveJSON(STORAGE_KEYS.ACTIVE_TASK, task.id);
         saveJSON(STORAGE_KEYS.QUEUE_MODE, true);
 
-        const targetMode = task.timerMode && MODE_CONFIG[task.timerMode] ? task.timerMode : 'focus';
-        const targetDuration = task.customDuration && task.customDuration > 0 ? task.customDuration : state.durations[targetMode];
+        const stepNum = task.blocks.findIndex((b) => b.id === firstOpenBlock.id) + 1;
+        const mCfg = MODE_CONFIG[firstOpenBlock.mode] || MODE_CONFIG.focus;
 
         pauseTimer();
-        switchMode(targetMode, targetDuration, false);
+        switchMode(firstOpenBlock.mode, firstOpenBlock.duration, false);
         renderActiveTaskCard();
         renderTasksForSelectedDate();
         switchTab('timer');
         startTimer();
-        showTransitionToast(targetMode, `Playing: ${task.title} (${targetDuration}m)`);
-      }
-
-      function runEntireDaySequence() {
-        const dayTasks = getOrderedTasksForDate(state.selectedDate);
-        const firstPending = dayTasks.find((t) => !t.completed);
-        if (!firstPending) {
-          showTransitionToast('focus', 'All blocks for this day are already completed!');
-          return;
-        }
-        startScheduledTaskSession(firstPending.id);
+        showTransitionToast(
+          firstOpenBlock.mode,
+          `${task.title} • Step ${stepNum}/${task.blocks.length}: ${mCfg.shortLabel} (${firstOpenBlock.duration}m)`
+        );
       }
 
       // =========================================================================
-      // 9. CALENDAR & PLANNER RENDERING
+      // 9. CALENDAR & UNIFIED STRUCTURED TASK CARDS RENDERING
       // =========================================================================
       function renderCalendar() {
         if (!dom.calendarMonthYear || !dom.calendarDaysGrid) return;
@@ -1734,143 +1755,118 @@
         });
       }
 
-      function escapeHTML(str) {
-        const div = document.createElement('div');
-        div.textContent = String(str ?? '');
-        return div.innerHTML;
-      }
-
       function renderTasksForSelectedDate() {
         if (!dom.taskListContainer) return;
 
         const readable = formatReadableDate(state.selectedDate);
-        if (dom.selectedDateHeading) dom.selectedDateHeading.textContent = `Queue for ${readable}`;
+        if (dom.selectedDateHeading) dom.selectedDateHeading.textContent = `Tasks for ${readable}`;
 
-        const dayTasks = getOrderedTasksForDate(state.selectedDate);
+        const dayTasks = state.tasks.filter((t) => t.date === state.selectedDate);
         if (dom.selectedDateSubtext) {
-          dom.selectedDateSubtext.textContent = `${dayTasks.length} ${dayTasks.length === 1 ? 'block' : 'blocks'} in sequence`;
+          dom.selectedDateSubtext.textContent = `${dayTasks.length} structured ${dayTasks.length === 1 ? 'task' : 'tasks'}`;
         }
 
         if (dayTasks.length === 0) {
-          if (dom.timelineSummaryBar) dom.timelineSummaryBar.classList.add('hidden');
           dom.taskListContainer.innerHTML = `
             <div class="bg-white/[0.02] border border-dashed border-white/15 rounded-2xl p-6 text-center my-auto">
-              <p class="text-sm font-medium text-zinc-400">No blocks sequenced for ${escapeHTML(readable)}</p>
-              <p class="text-xs text-zinc-500 mt-1">Use the quick-add buttons above (+ Focus, + Rest, + Lunch) or "+ Schedule" to build your custom flow.</p>
+              <p class="text-sm font-medium text-zinc-300">No structured tasks for ${escapeHTML(readable)}</p>
+              <p class="text-xs text-zinc-500 mt-1">Tap <strong class="text-rose-400">+ New Task</strong> to build a complete Work → Rest → Lunch → Finish sequence inside one task.</p>
             </div>
           `;
           return;
         }
 
-        let focusMins = 0;
-        let breakMins = 0;
-        let remainingMins = 0;
-
-        dayTasks.forEach((t) => {
-          const tMode = t.timerMode && MODE_CONFIG[t.timerMode] ? t.timerMode : 'focus';
-          const dur = (t.customDuration || state.durations[tMode]) * (t.estPomos || 1);
-          if (tMode === 'focus') focusMins += dur;
-          else breakMins += dur;
-          if (!t.completed) remainingMins += dur;
-        });
-
-        if (dom.summaryFocusMins) dom.summaryFocusMins.textContent = formatMinutesHuman(focusMins);
-        if (dom.summaryBreakMins) dom.summaryBreakMins.textContent = formatMinutesHuman(breakMins);
-        if (dom.summaryEndTime) dom.summaryEndTime.textContent = remainingMins > 0 ? getFutureHHMM(remainingMins) : 'Done';
-        if (dom.timelineSummaryBar) dom.timelineSummaryBar.classList.remove('hidden');
-
         dom.taskListContainer.innerHTML = dayTasks
-          .map((task, index) => {
-            const isLinked = task.id === state.activeTaskId && !task.completed;
-            const tMode = task.timerMode && MODE_CONFIG[task.timerMode] ? task.timerMode : 'focus';
-            const mCfg = MODE_CONFIG[tMode];
-            const dur = task.customDuration || state.durations[tMode];
-            const isFirst = index === 0;
-            const isLast = index === dayTasks.length - 1;
+          .map((task) => {
+            const isActiveTask = task.id === state.activeTaskId && !task.completed;
+            const totalBlocks = task.blocks.length;
+            const completedBlocks = task.blocks.filter((b) => b.completed).length;
+            const totalMins = task.blocks.reduce((sum, b) => sum + (b.duration || 0), 0);
+
+            const timelineStripHtml = task.blocks
+              .map((blk, idx) => {
+                const mCfg = MODE_CONFIG[blk.mode] || MODE_CONFIG.focus;
+                const arrow = idx < totalBlocks - 1 ? `<span class="text-zinc-600 text-[10px] mx-0.5">→</span>` : '';
+                return `
+                  <span class="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
+                    blk.completed
+                      ? 'bg-white/[0.03] text-zinc-500 line-through border border-white/5'
+                      : mCfg.taskBadgeClass
+                  }" title="${escapeHTML(blk.note || mCfg.label)}">
+                    <span>${mCfg.shortLabel}</span>
+                    <span class="font-mono">${blk.duration}m</span>
+                  </span>${arrow}
+                `;
+              })
+              .join('');
 
             return `
-              <div draggable="true" data-task-card-id="${escapeHTML(task.id)}"
-                class="sequence-card bg-white/[0.04] backdrop-blur-md rounded-2xl p-3 border ${isLinked ? 'border-rose-500/50 bg-rose-500/[0.07]' : 'border-white/10'} flex items-center justify-between gap-2 transition select-none">
-
-                <div class="flex items-center gap-2 shrink-0">
-                  <div class="cursor-grab active:cursor-grabbing text-zinc-600 hover:text-zinc-300 px-0.5" title="Drag to reorder">
-                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M7 4a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm6-12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                    </svg>
-                  </div>
-
-                  <button type="button" data-action="toggle" data-id="${escapeHTML(task.id)}"
-                    class="w-5 h-5 rounded-full border-2 ${task.completed ? 'bg-teal-500 border-teal-500 text-zinc-950' : 'border-zinc-600 hover:border-rose-400 text-transparent'} flex items-center justify-center shrink-0 transition"
-                    aria-label="Toggle block completion">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </button>
-                </div>
-
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-[10px] font-mono font-bold text-zinc-500">#${index + 1}</span>
-                    <p class="text-xs font-semibold ${task.completed ? 'line-through text-zinc-500' : 'text-zinc-100'} truncate">
-                      ${escapeHTML(task.title)}
-                    </p>
-                  </div>
-                  <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md ${mCfg.taskBadgeClass}">
-                      ${mCfg.shortLabel} • ${dur}m
-                    </span>
-                    ${
-                      task.reminderEnabled && task.reminderTime
-                        ? `<span class="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded-md bg-white/[0.06] text-zinc-300 border border-white/10">
-                            🔔 ${escapeHTML(task.reminderTime)}
-                          </span>`
-                        : ''
-                    }
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-0.5 shrink-0">
-                  <div class="flex flex-col mr-0.5">
-                    <button type="button" data-action="move-up" data-id="${escapeHTML(task.id)}" ${isFirst ? 'disabled' : ''}
-                      class="p-0.5 rounded text-zinc-400 hover:text-white disabled:opacity-20 transition" title="Move Up">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+              <div class="bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border ${isActiveTask ? 'border-rose-500/50 bg-rose-500/[0.06]' : 'border-white/10'} space-y-2.5 transition">
+                <!-- Card Top Row: Complete Toggle, Title & Action Buttons -->
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-start gap-2.5 min-w-0 flex-1">
+                    <button type="button" data-action="toggle-task" data-id="${escapeHTML(task.id)}"
+                      class="w-5 h-5 mt-0.5 rounded-full border-2 ${task.completed ? 'bg-teal-500 border-teal-500 text-zinc-950' : 'border-zinc-600 hover:border-rose-400 text-transparent'} flex items-center justify-center shrink-0 transition"
+                      aria-label="Mark entire task complete">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </button>
-                    <button type="button" data-action="move-down" data-id="${escapeHTML(task.id)}" ${isLast ? 'disabled' : ''}
-                      class="p-0.5 rounded text-zinc-400 hover:text-white disabled:opacity-20 transition" title="Move Down">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+
+                    <div class="min-w-0 flex-1">
+                      <p class="text-[13px] font-bold ${task.completed ? 'line-through text-zinc-500' : 'text-white'} leading-snug">
+                        ${escapeHTML(task.title)}
+                      </p>
+                      <div class="flex flex-wrap items-center gap-2 mt-1 text-[10px] text-zinc-400">
+                        <span class="font-mono font-semibold text-zinc-300">${completedBlocks}/${totalBlocks} blocks</span>
+                        <span>•</span>
+                        <span class="font-mono">${formatMinutesHuman(totalMins)} total</span>
+                        ${
+                          task.reminderEnabled && task.reminderTime
+                            ? `<span>•</span><span class="font-mono text-amber-300">🔔 ${escapeHTML(task.reminderTime)}</span>`
+                            : ''
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Edit & Delete Controls -->
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" data-action="edit-task" data-id="${escapeHTML(task.id)}"
+                      class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Edit timer structure">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button type="button" data-action="delete-task" data-id="${escapeHTML(task.id)}"
+                      class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-white/10 transition" title="Delete task">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
                   </div>
+                </div>
 
-                  ${
-                    !task.completed
-                      ? `<button type="button" data-action="start-session" data-id="${escapeHTML(task.id)}"
-                          class="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white transition active:scale-95"
-                          title="Start from this block">
-                          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        </button>`
-                      : ''
-                  }
+                <!-- Visual Internal Timer Structure Timeline Strip -->
+                <div class="flex flex-wrap items-center gap-y-1 pt-2 border-t border-white/[0.06]">
+                  ${timelineStripHtml}
+                </div>
 
-                  <button type="button" data-action="edit" data-id="${escapeHTML(task.id)}"
-                    class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition"
-                    title="Edit block">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                <!-- Run Task Action Bar -->
+                <div class="flex items-center justify-between pt-1">
+                  <span class="text-[10px] font-medium ${isActiveTask ? 'text-rose-400' : 'text-zinc-500'}">
+                    ${isActiveTask ? '● Loaded in Timer' : task.completed ? '✓ Completed' : 'Ready to run sequence'}
+                  </span>
+                  <button type="button" data-action="run-task" data-id="${escapeHTML(task.id)}"
+                    class="px-3 py-1.5 rounded-xl ${
+                      task.completed
+                        ? 'bg-white/[0.07] hover:bg-white/15 text-zinc-300'
+                        : 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-500/20'
+                    } text-[11px] font-heading font-bold flex items-center gap-1.5 transition active:scale-95">
+                    <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
                     </svg>
-                  </button>
-
-                  <button type="button" data-action="delete" data-id="${escapeHTML(task.id)}"
-                    class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-white/10 transition"
-                    title="Delete block">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
+                    <span>${task.completed ? 'Restart Task' : completedBlocks > 0 ? 'Resume Task' : 'Run Task'}</span>
                   </button>
                 </div>
               </div>
@@ -1883,61 +1879,230 @@
             e.stopPropagation();
             const id = btn.dataset.id;
             const action = btn.dataset.action;
-            if (action === 'toggle') toggleTaskComplete(id);
-            if (action === 'start-session') startScheduledTaskSession(id);
-            if (action === 'move-up') moveTaskInSequence(id, -1);
-            if (action === 'move-down') moveTaskInSequence(id, 1);
-            if (action === 'edit') openEditTaskModal(id);
-            if (action === 'delete') deleteTask(id);
-          });
-        });
-
-        dom.taskListContainer.querySelectorAll('.sequence-card').forEach((card) => {
-          card.addEventListener('dragstart', (e) => {
-            state.draggedTaskId = card.dataset.taskCardId;
-            card.classList.add('opacity-40');
-            if (e.dataTransfer) {
-              e.dataTransfer.effectAllowed = 'move';
-              e.dataTransfer.setData('text/plain', state.draggedTaskId);
-            }
-          });
-
-          card.addEventListener('dragend', () => {
-            card.classList.remove('opacity-40');
-            if (dom.taskListContainer) {
-              dom.taskListContainer.querySelectorAll('.sequence-card').forEach((c) => {
-                c.classList.remove('drag-over-top', 'drag-over-bottom');
-              });
-            }
-            state.draggedTaskId = null;
-          });
-
-          card.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            if (!state.draggedTaskId || state.draggedTaskId === card.dataset.taskCardId) return;
-            const rect = card.getBoundingClientRect();
-            const isBottom = e.clientY - rect.top > rect.height / 2;
-            card.classList.toggle('drag-over-bottom', isBottom);
-            card.classList.toggle('drag-over-top', !isBottom);
-          });
-
-          card.addEventListener('dragleave', () => {
-            card.classList.remove('drag-over-top', 'drag-over-bottom');
-          });
-
-          card.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const targetId = card.dataset.taskCardId;
-            const rect = card.getBoundingClientRect();
-            const insertAfter = e.clientY - rect.top > rect.height / 2;
-            card.classList.remove('drag-over-top', 'drag-over-bottom');
-            reorderTaskByDrag(state.draggedTaskId, targetId, insertAfter);
+            if (action === 'toggle-task') toggleTaskComplete(id);
+            if (action === 'run-task') runStructuredTask(id, false);
+            if (action === 'edit-task') openEditTaskModal(id);
+            if (action === 'delete-task') deleteTask(id);
           });
         });
       }
 
       // =========================================================================
-      // 10. REMINDER CHECKER LOOP
+      // 10. MODAL INTERNAL TIMER STRUCTURE BUILDER (DRAG, REORDER, PRESETS)
+      // =========================================================================
+      function updateModalSequenceSummary() {
+        const blocks = state.modalDraftBlocks;
+        let focusMins = 0;
+        let breakMins = 0;
+
+        blocks.forEach((b) => {
+          const d = Number(b.duration) || 0;
+          if (b.mode === 'focus') focusMins += d;
+          else breakMins += d;
+        });
+
+        const totalMins = focusMins + breakMins;
+        if (dom.modalSumBlocks) dom.modalSumBlocks.textContent = String(blocks.length);
+        if (dom.modalSumFocus) dom.modalSumFocus.textContent = formatMinutesHuman(focusMins);
+        if (dom.modalSumBreak) dom.modalSumBreak.textContent = formatMinutesHuman(breakMins);
+        if (dom.modalSumEnd) dom.modalSumEnd.textContent = totalMins > 0 ? getFutureHHMM(totalMins) : '--:--';
+      }
+
+      function renderModalBlocksList() {
+        if (!dom.modalBlocksList) return;
+        updateModalSequenceSummary();
+
+        if (state.modalDraftBlocks.length === 0) {
+          dom.modalBlocksList.innerHTML = `
+            <div class="py-4 px-3 rounded-xl border border-dashed border-white/15 text-center text-[11px] text-zinc-500">
+              No blocks yet. Tap <strong class="text-zinc-300">+ Focus</strong>, <strong class="text-zinc-300">+ Rest</strong>, or <strong class="text-zinc-300">+ Lunch</strong> above.
+            </div>
+          `;
+          return;
+        }
+
+        dom.modalBlocksList.innerHTML = state.modalDraftBlocks
+          .map((blk, idx) => {
+            const mCfg = MODE_CONFIG[blk.mode] || MODE_CONFIG.focus;
+            const isFirst = idx === 0;
+            const isLast = idx === state.modalDraftBlocks.length - 1;
+
+            return `
+              <div draggable="true" data-modal-idx="${idx}"
+                class="modal-block-row flex items-center gap-1.5 p-2 rounded-xl bg-zinc-900/90 border border-white/10 transition select-none">
+                <!-- Drag Handle & Step Number -->
+                <div class="cursor-grab active:cursor-grabbing text-zinc-600 hover:text-zinc-300 flex items-center gap-1 shrink-0" title="Drag to reorder">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M7 4a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm6-12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                  </svg>
+                  <span class="text-[10px] font-mono font-bold text-zinc-500 w-3.5">${idx + 1}</span>
+                </div>
+
+                <!-- Mode Pill -->
+                <span class="text-[10px] font-bold px-2 py-1 rounded-md shrink-0 ${mCfg.taskBadgeClass}">
+                  ${mCfg.shortLabel}
+                </span>
+
+                <!-- Optional Note Input -->
+                <input type="text" data-blk-note-idx="${idx}" value="${escapeHTML(blk.note)}"
+                  placeholder="${mCfg.defaultNote}"
+                  class="min-w-0 flex-1 bg-transparent border-b border-transparent focus:border-white/25 text-[11px] text-zinc-200 placeholder:text-zinc-600 px-1 py-0.5 focus:outline-none" />
+
+                <!-- Editable Duration (min) -->
+                <div class="flex items-center gap-0.5 shrink-0">
+                  <input type="number" min="1" max="180" data-blk-dur-idx="${idx}" value="${blk.duration}"
+                    class="w-11 text-center font-mono font-bold text-[11px] py-1 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-1 focus:ring-rose-500" />
+                  <span class="text-[10px] text-zinc-500">m</span>
+                </div>
+
+                <!-- Up / Down & Remove Buttons -->
+                <div class="flex items-center shrink-0">
+                  <button type="button" data-blk-move="${idx}:-1" ${isFirst ? 'disabled' : ''}
+                    class="p-1 text-zinc-400 hover:text-white disabled:opacity-20 transition" title="Move Up">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                    </svg>
+                  </button>
+                  <button type="button" data-blk-move="${idx}:1" ${isLast ? 'disabled' : ''}
+                    class="p-1 text-zinc-400 hover:text-white disabled:opacity-20 transition" title="Move Down">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <button type="button" data-blk-remove="${idx}"
+                    class="p-1 text-zinc-500 hover:text-rose-400 transition" title="Remove block">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            `;
+          })
+          .join('');
+
+        // Bind note & duration inline edits
+        dom.modalBlocksList.querySelectorAll('[data-blk-note-idx]').forEach((inp) => {
+          inp.addEventListener('input', () => {
+            const idx = parseInt(inp.dataset.blkNoteIdx, 10);
+            if (state.modalDraftBlocks[idx]) {
+              state.modalDraftBlocks[idx].note = inp.value;
+            }
+          });
+        });
+
+        dom.modalBlocksList.querySelectorAll('[data-blk-dur-idx]').forEach((inp) => {
+          inp.addEventListener('change', () => {
+            const idx = parseInt(inp.dataset.blkDurIdx, 10);
+            if (state.modalDraftBlocks[idx]) {
+              const val = Math.max(1, Math.min(180, parseInt(inp.value, 10) || 1));
+              state.modalDraftBlocks[idx].duration = val;
+              inp.value = val;
+              updateModalSequenceSummary();
+            }
+          });
+        });
+
+        // Bind Move Up/Down
+        dom.modalBlocksList.querySelectorAll('[data-blk-move]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const [idxStr, dirStr] = btn.dataset.blkMove.split(':');
+            const idx = parseInt(idxStr, 10);
+            const dir = parseInt(dirStr, 10);
+            const targetIdx = idx + dir;
+            if (targetIdx < 0 || targetIdx >= state.modalDraftBlocks.length) return;
+            const [moved] = state.modalDraftBlocks.splice(idx, 1);
+            state.modalDraftBlocks.splice(targetIdx, 0, moved);
+            renderModalBlocksList();
+          });
+        });
+
+        // Bind Remove
+        dom.modalBlocksList.querySelectorAll('[data-blk-remove]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.blkRemove, 10);
+            state.modalDraftBlocks.splice(idx, 1);
+            renderModalBlocksList();
+          });
+        });
+
+        // Bind Drag & Drop inside Modal
+        dom.modalBlocksList.querySelectorAll('.modal-block-row').forEach((row) => {
+          row.addEventListener('dragstart', (e) => {
+            state.modalDraggedIndex = parseInt(row.dataset.modalIdx, 10);
+            row.classList.add('opacity-40');
+            if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+          });
+
+          row.addEventListener('dragend', () => {
+            row.classList.remove('opacity-40');
+            dom.modalBlocksList.querySelectorAll('.modal-block-row').forEach((r) => {
+              r.classList.remove('drag-over-top', 'drag-over-bottom');
+            });
+            state.modalDraggedIndex = null;
+          });
+
+          row.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const targetIdx = parseInt(row.dataset.modalIdx, 10);
+            if (state.modalDraggedIndex === null || state.modalDraggedIndex === targetIdx) return;
+            const rect = row.getBoundingClientRect();
+            const isBottom = e.clientY - rect.top > rect.height / 2;
+            row.classList.toggle('drag-over-bottom', isBottom);
+            row.classList.toggle('drag-over-top', !isBottom);
+          });
+
+          row.addEventListener('dragleave', () => {
+            row.classList.remove('drag-over-top', 'drag-over-bottom');
+          });
+
+          row.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const targetIdx = parseInt(row.dataset.modalIdx, 10);
+            if (state.modalDraggedIndex === null || state.modalDraggedIndex === targetIdx) return;
+            const rect = row.getBoundingClientRect();
+            const insertAfter = e.clientY - rect.top > rect.height / 2;
+            row.classList.remove('drag-over-top', 'drag-over-bottom');
+
+            const [moved] = state.modalDraftBlocks.splice(state.modalDraggedIndex, 1);
+            let finalIdx = targetIdx;
+            if (state.modalDraggedIndex < targetIdx) finalIdx -= 1;
+            if (insertAfter) finalIdx += 1;
+            state.modalDraftBlocks.splice(Math.max(0, finalIdx), 0, moved);
+            state.modalDraggedIndex = null;
+            renderModalBlocksList();
+          });
+        });
+      }
+
+      function applyPresetToDraft(presetKey) {
+        const d = state.durations;
+        if (presetKey === 'classic') {
+          state.modalDraftBlocks = [
+            createBlock('focus', d.focus, 'Session 1'),
+            createBlock('short', d.short, 'Short rest'),
+            createBlock('focus', d.focus, 'Session 2'),
+            createBlock('short', d.short, 'Short rest'),
+            createBlock('focus', d.focus, 'Session 3'),
+            createBlock('short', d.short, 'Short rest'),
+            createBlock('focus', d.focus, 'Session 4'),
+            createBlock('long', d.long, 'Long recovery'),
+          ];
+        } else if (presetKey === 'halfday') {
+          state.modalDraftBlocks = [
+            createBlock('focus', d.focus, 'Morning block 1'),
+            createBlock('short', d.short, 'Coffee break'),
+            createBlock('focus', d.focus, 'Morning block 2'),
+            createBlock('lunch', d.lunch, 'Lunch break'),
+            createBlock('focus', d.focus, 'Afternoon wrap-up'),
+            createBlock('long', d.long, 'Finish & review'),
+          ];
+        }
+        renderModalBlocksList();
+      }
+
+      // =========================================================================
+      // 11. REMINDER CHECKER LOOP
       // =========================================================================
       function showReminderBanner(task) {
         if (!dom.reminderBanner) return;
@@ -1953,14 +2118,7 @@
         });
 
         playChime('reminder');
-
-        if ('Notification' in window && Notification.permission === 'granted') {
-          try {
-            new Notification('FocusFlow Scheduled Reminder', {
-              body: `${task.title} (${task.reminderTime})`,
-            });
-          } catch (e) {}
-        }
+        sendSystemNotification('FocusFlow Scheduled Task', `${task.title} (${task.reminderTime})`);
       }
 
       function hideReminderBanner() {
@@ -1998,7 +2156,7 @@
       }
 
       // =========================================================================
-      // 11. NAVIGATION & MODAL HANDLERS
+      // 12. NAVIGATION & EVENT LISTENERS
       // =========================================================================
       function switchTab(tabName) {
         state.activeTab = tabName;
@@ -2040,9 +2198,12 @@
       });
 
       on(dom.queueModeToggleBtn, 'click', () => {
-        state.useDayQueue = !state.useDayQueue;
-        saveJSON(STORAGE_KEYS.QUEUE_MODE, state.useDayQueue);
-        renderCycleStatus();
+        state.useTaskStructure = !state.useTaskStructure;
+        saveJSON(STORAGE_KEYS.QUEUE_MODE, state.useTaskStructure);
+        if (state.useTaskStructure && !state.isRunning) {
+          syncTimerToActiveTaskIfIdle();
+        }
+        updateTimerUI();
       });
 
       on(dom.skipNextBtn, 'click', () => {
@@ -2057,6 +2218,7 @@
       on(dom.resetBtn, 'click', stopAndResetTimer);
       on(dom.stepMinusBtn, 'click', () => adjustCurrentDuration(-1));
       on(dom.stepPlusBtn, 'click', () => adjustCurrentDuration(1));
+      on(dom.notifToggleBtn, 'click', requestSystemNotifications);
 
       on(dom.soundToggleBtn, 'click', () => {
         state.soundEnabled = !state.soundEnabled;
@@ -2069,17 +2231,12 @@
       on(dom.completeActiveTaskBtn, 'click', () => {
         if (state.activeTaskId) toggleTaskComplete(state.activeTaskId);
       });
+      on(dom.editActiveTaskBtn, 'click', () => {
+        if (state.activeTaskId) openEditTaskModal(state.activeTaskId);
+      });
 
       dom.navTabBtns.forEach((btn) => {
         on(btn, 'click', () => switchTab(btn.dataset.tab));
-      });
-
-      on(dom.runDaySequenceBtn, 'click', runEntireDaySequence);
-
-      dom.quickAddBtns.forEach((btn) => {
-        on(btn, 'click', () => {
-          quickAddBlock(btn.dataset.quickAdd);
-        });
       });
 
       on(dom.calPrevBtn, 'click', () => {
@@ -2177,74 +2334,91 @@
         saveJSON(STORAGE_KEYS.LONG_INTERVAL, state.longRestInterval);
 
         if (!state.isRunning) {
-          state.totalSeconds = state.durations[state.mode] * 60;
-          state.secondsLeft = state.totalSeconds;
+          const tInfo = getActiveStructuredTaskState();
+          if (!tInfo.active) {
+            state.totalSeconds = state.durations[state.mode] * 60;
+            state.secondsLeft = state.totalSeconds;
+          }
         }
         updateTimerUI();
-        renderActiveTaskCard();
-        renderTasksForSelectedDate();
         if (dom.settingsModal) dom.settingsModal.classList.add('hidden');
       });
 
-      // Add / Edit Task Modal
-      on(dom.taskTimerModeSelect, 'change', () => {
-        if (!dom.taskTimerModeSelect) return;
-        const selectedMode = dom.taskTimerModeSelect.value;
-        if (dom.taskCustomDurationInput) {
-          dom.taskCustomDurationInput.value = state.durations[selectedMode] || 25;
+      // Add / Edit Structured Task Modal
+      dom.modalQuickBtns.forEach((btn) => {
+        on(btn, 'click', () => {
+          const modeKey = btn.dataset.modalQuick;
+          state.modalDraftBlocks.push(createBlock(modeKey, state.durations[modeKey]));
+          renderModalBlocksList();
+        });
+      });
+
+      dom.presetBtns.forEach((btn) => {
+        on(btn, 'click', () => {
+          applyPresetToDraft(btn.dataset.preset);
+        });
+      });
+
+      on(dom.modalBlockModeSelect, 'change', () => {
+        const m = dom.modalBlockModeSelect.value;
+        if (dom.modalBlockDurInput) {
+          dom.modalBlockDurInput.value = state.durations[m] || 25;
         }
-        if (dom.editingTaskIdInput && dom.taskTitleInput && !dom.editingTaskIdInput.value && !dom.taskTitleInput.value.trim()) {
-          dom.taskTitleInput.placeholder = `e.g., ${(MODE_CONFIG[selectedMode] || MODE_CONFIG.focus).defaultTitle}`;
-        }
+      });
+
+      on(dom.modalAddCustomBlockBtn, 'click', () => {
+        const m = dom.modalBlockModeSelect?.value || 'focus';
+        const d = Math.max(1, Math.min(180, parseInt(dom.modalBlockDurInput?.value, 10) || state.durations[m]));
+        state.modalDraftBlocks.push(createBlock(m, d));
+        renderModalBlocksList();
       });
 
       function openEditTaskModal(taskId) {
         const task = state.tasks.find((t) => t.id === taskId);
         if (!task) return;
 
-        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Edit Scheduled Block';
-        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Save Changes';
+        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Edit Structured Task';
+        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Save Task Structure';
         if (dom.editingTaskIdInput) dom.editingTaskIdInput.value = task.id;
         if (dom.taskTitleInput) dom.taskTitleInput.value = task.title;
-        if (dom.taskTimerModeSelect) dom.taskTimerModeSelect.value = task.timerMode || 'focus';
-        if (dom.taskCustomDurationInput) {
-          dom.taskCustomDurationInput.value = task.customDuration || state.durations[task.timerMode || 'focus'];
-        }
         if (dom.taskDateInput) dom.taskDateInput.value = task.date;
-        if (dom.taskPomoInput) dom.taskPomoInput.value = task.estPomos || 1;
         if (dom.taskReminderToggle) dom.taskReminderToggle.checked = Boolean(task.reminderEnabled);
         if (dom.taskTimeInput) dom.taskTimeInput.value = task.reminderTime || getFutureHHMM(30);
 
         if (dom.reminderTimeWrapper) {
-          if (task.reminderEnabled) {
-            dom.reminderTimeWrapper.classList.remove('opacity-40', 'pointer-events-none');
-          } else {
-            dom.reminderTimeWrapper.classList.add('opacity-40', 'pointer-events-none');
-          }
+          dom.reminderTimeWrapper.classList.toggle('opacity-40', !task.reminderEnabled);
+          dom.reminderTimeWrapper.classList.toggle('pointer-events-none', !task.reminderEnabled);
         }
+
+        state.modalDraftBlocks = task.blocks.map((b) => ({ ...b }));
+        renderModalBlocksList();
 
         if (dom.taskModal) dom.taskModal.classList.remove('hidden');
         if (dom.taskTitleInput) dom.taskTitleInput.focus();
       }
 
       on(dom.openAddTaskBtn, 'click', () => {
-        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Schedule Session / Block';
-        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Add to Schedule Queue';
+        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Plan Structured Task';
+        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Save Structured Task';
         if (dom.editingTaskIdInput) dom.editingTaskIdInput.value = '';
         if (dom.taskTitleInput) dom.taskTitleInput.value = '';
-        if (dom.taskTimerModeSelect) dom.taskTimerModeSelect.value = 'focus';
-        if (dom.taskCustomDurationInput) dom.taskCustomDurationInput.value = state.durations.focus;
         if (dom.taskDateInput) dom.taskDateInput.value = state.selectedDate;
-        if (dom.taskPomoInput) dom.taskPomoInput.value = 1;
         if (dom.taskReminderToggle) dom.taskReminderToggle.checked = false;
         if (dom.reminderTimeWrapper) dom.reminderTimeWrapper.classList.add('opacity-40', 'pointer-events-none');
         if (dom.taskTimeInput) dom.taskTimeInput.value = getFutureHHMM(30);
+        if (dom.modalBlockModeSelect) dom.modalBlockModeSelect.value = 'focus';
+        if (dom.modalBlockDurInput) dom.modalBlockDurInput.value = state.durations.focus;
+
+        // Default starter structure: Focus -> Short Rest -> Focus
+        state.modalDraftBlocks = [
+          createBlock('focus', state.durations.focus, 'Work block 1'),
+          createBlock('short', state.durations.short, 'Short rest'),
+          createBlock('focus', state.durations.focus, 'Work block 2'),
+        ];
+        renderModalBlocksList();
+
         if (dom.taskModal) dom.taskModal.classList.remove('hidden');
         if (dom.taskTitleInput) dom.taskTitleInput.focus();
-
-        if ('Notification' in window && Notification.permission === 'default') {
-          Notification.requestPermission().catch(() => {});
-        }
       });
 
       on(dom.closeTaskModalBtn, 'click', () => {
@@ -2259,11 +2433,9 @@
 
       on(dom.taskReminderToggle, 'change', () => {
         if (!dom.taskReminderToggle || !dom.reminderTimeWrapper) return;
-        if (dom.taskReminderToggle.checked) {
-          dom.reminderTimeWrapper.classList.remove('opacity-40', 'pointer-events-none');
-        } else {
-          dom.reminderTimeWrapper.classList.add('opacity-40', 'pointer-events-none');
-        }
+        const enabled = dom.taskReminderToggle.checked;
+        dom.reminderTimeWrapper.classList.toggle('opacity-40', !enabled);
+        dom.reminderTimeWrapper.classList.toggle('pointer-events-none', !enabled);
       });
 
       on(dom.addTaskForm, 'submit', (e) => {
@@ -2271,43 +2443,46 @@
         const title = (dom.taskTitleInput?.value || '').trim();
         if (!title) return;
 
-        const chosenMode = dom.taskTimerModeSelect?.value || 'focus';
-        const customDur = Math.max(1, Math.min(180, parseInt(dom.taskCustomDurationInput?.value, 10) || state.durations[chosenMode]));
+        if (state.modalDraftBlocks.length === 0) {
+          state.modalDraftBlocks.push(createBlock('focus', state.durations.focus));
+        }
+
         const chosenDate = dom.taskDateInput?.value || state.selectedDate;
         const editingId = dom.editingTaskIdInput?.value || '';
+        const cleanBlocks = state.modalDraftBlocks.map((b) => ({
+          id: b.id,
+          mode: MODE_CONFIG[b.mode] ? b.mode : 'focus',
+          duration: Math.max(1, Math.min(180, Number(b.duration) || 25)),
+          note: String(b.note || '').trim(),
+          completed: Boolean(b.completed),
+        }));
+        const allBlocksDone = cleanBlocks.every((b) => b.completed);
 
         if (editingId) {
           const existing = state.tasks.find((t) => t.id === editingId);
           if (existing) {
-            const oldDate = existing.date;
             existing.title = title;
             existing.date = chosenDate;
-            existing.timerMode = chosenMode;
-            existing.customDuration = customDur;
             existing.reminderEnabled = Boolean(dom.taskReminderToggle?.checked);
             existing.reminderTime = dom.taskTimeInput?.value || '09:00';
-            existing.estPomos = Math.max(1, parseInt(dom.taskPomoInput?.value, 10) || 1);
-            if (oldDate !== chosenDate) {
-              existing.orderIndex = getOrderedTasksForDate(chosenDate).length;
-              normalizeOrderIndices(oldDate);
-            }
+            existing.blocks = cleanBlocks;
+            existing.completed = allBlocksDone;
             saveJSON(STORAGE_KEYS.TASKS, state.tasks);
+
+            if (state.activeTaskId === existing.id && !state.isRunning) {
+              syncTimerToActiveTaskIfIdle();
+            }
           }
         } else {
-          const dayTasks = getOrderedTasksForDate(chosenDate);
           const newTask = {
-            id: 'task-' + Date.now(),
+            id: 'stask-' + Date.now(),
             title,
             date: chosenDate,
-            orderIndex: dayTasks.length,
-            timerMode: chosenMode,
-            customDuration: customDur,
             reminderEnabled: Boolean(dom.taskReminderToggle?.checked),
             reminderTime: dom.taskTimeInput?.value || '09:00',
             reminded: false,
             completed: false,
-            estPomos: Math.max(1, parseInt(dom.taskPomoInput?.value, 10) || 1),
-            completedPomos: 0,
+            blocks: cleanBlocks,
           };
 
           state.tasks.push(newTask);
@@ -2316,6 +2491,7 @@
           if (!state.activeTaskId && newTask.date === getTodayStr()) {
             state.activeTaskId = newTask.id;
             saveJSON(STORAGE_KEYS.ACTIVE_TASK, newTask.id);
+            if (!state.isRunning) syncTimerToActiveTaskIfIdle();
           }
         }
 
@@ -2338,7 +2514,7 @@
         const taskId = state.activeBannerTaskId;
         hideReminderBanner();
         if (taskId) {
-          startScheduledTaskSession(taskId);
+          runStructuredTask(taskId, false);
         } else {
           switchTab('timer');
           startTimer();
@@ -2346,7 +2522,7 @@
       });
 
       // =========================================================================
-      // 12. INITIALIZATION
+      // 13. INITIALIZATION
       // =========================================================================
       function init() {
         const now = new Date();
@@ -2358,7 +2534,9 @@
           });
         }
 
+        syncTimerToActiveTaskIfIdle();
         updateSoundUI();
+        updateNotificationBadgeUI();
         updateTimerUI();
         renderActiveTaskCard();
         renderCalendar();
