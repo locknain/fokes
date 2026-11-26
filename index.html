@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FocusFlow • Mobile Pomodoro & Task Structure Planner</title>
+  <title>FocusFlow • Mobile Pomodoro & Task Sequence Planner</title>
 
   <!-- PWA Standalone & Notification Metadata -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#0A0A0C" />
-  <link rel="manifest" href='data:application/manifest+json,{"name":"FocusFlow","short_name":"FocusFlow","start_url":".","display":"standalone","background_color":"#0A0A0C","theme_color":"#0A0A0C"}' />
+  <meta name="theme-color" content="#09090B" />
+  <link rel="manifest" href='data:application/manifest+json,{"name":"FocusFlow","short_name":"FocusFlow","start_url":".","display":"standalone","background_color":"#09090B","theme_color":"#09090B"}' />
 
-  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -24,8 +24,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            heading: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
           },
         },
@@ -34,15 +33,43 @@
   </script>
 
   <style>
+    :root {
+      --bg-canvas: #09090B;
+      --bg-card: #111114;
+      --bg-elevated: #18181C;
+      --border-subtle: #26262C;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #050507;
+      color: #F4F4F5;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
     }
-    .font-heading {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+
     .font-mono {
       font-family: 'JetBrains Mono', monospace;
     }
+
+    /* Mobile Anti-Zoom Rule: Enforce >= 16px on text/number/date/time/select controls under 768px */
+    @media (max-width: 767px) {
+      input[type="text"],
+      input[type="number"],
+      input[type="date"],
+      input[type="time"],
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+    }
+
     /* Custom subtle dark scrollbar */
     ::-webkit-scrollbar {
       width: 4px;
@@ -55,6 +82,7 @@
       background: rgba(255, 255, 255, 0.14);
       border-radius: 9999px;
     }
+
     /* Drag and drop visual cues inside modal sequence builder */
     .drag-over-top {
       border-top: 2px solid #F43F5E !important;
@@ -65,79 +93,105 @@
 
     /* Floating Apple Liquid-Glass Pill Navbar */
     .liquid-pill-nav {
-      position: absolute;
-      bottom: 18px;
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
       left: 50%;
       transform: translateX(-50%);
       width: fit-content;
       padding: 6px;
       border-radius: 9999px;
-      background: rgba(20, 20, 24, 0.72);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      background: rgba(24, 24, 28, 0.76);
+      backdrop-filter: blur(26px) saturate(190%);
+      -webkit-backdrop-filter: blur(26px) saturate(190%);
       border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-      z-index: 30;
+      box-shadow:
+        0 14px 36px rgba(0, 0, 0, 0.72),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      z-index: 35;
+    }
+
+    @media (min-width: 640px) {
+      .liquid-pill-nav {
+        position: absolute;
+        bottom: 18px;
+      }
     }
 
     .liquid-pill-tab {
-      width: 48px;
+      width: 50px;
       height: 44px;
       border-radius: 9999px;
       color: rgba(255, 255, 255, 0.55);
       border: 1px solid transparent;
-      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: all 0.24s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .liquid-pill-tab:hover {
-      color: rgba(255, 255, 255, 0.85);
+      color: rgba(255, 255, 255, 0.88);
     }
 
     .liquid-pill-tab.is-active {
       background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: #ffffff;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
     }
 
-    /* Native Mobile Date & Time Input Sizing Fix */
-    input[type="date"],
-    input[type="time"] {
+    /* Safe-Zone Containment & Inset Focus Rings for Modal Inputs */
+    .safe-input {
       width: 100%;
       max-width: 100%;
       min-width: 0;
       box-sizing: border-box;
-      -webkit-appearance: none;
-      appearance: none;
+      background-color: #18181C;
+      border: 1px solid #26262C;
+      color: #F4F4F5;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
-    input[type="date"]::-webkit-date-and-time-value,
-    input[type="time"]::-webkit-date-and-time-value {
+    .safe-input:focus {
+      outline: none;
+      border-color: #F43F5E;
+      box-shadow: inset 0 0 0 1.5px #F43F5E;
+    }
+
+    input[type="date"].safe-input,
+    input[type="time"].safe-input {
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+    }
+
+    input[type="date"].safe-input::-webkit-date-and-time-value,
+    input[type="time"].safe-input::-webkit-date-and-time-value {
       text-align: left;
       margin: 0;
     }
 
-    input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="time"]::-webkit-calendar-picker-indicator {
+    input[type="date"].safe-input::-webkit-calendar-picker-indicator,
+    input[type="time"].safe-input::-webkit-calendar-picker-indicator {
       margin-left: 2px;
       padding: 0;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       cursor: pointer;
-      opacity: 0.75;
+      opacity: 0.8;
     }
   </style>
 </head>
-<body class="bg-[#070709] text-zinc-100 antialiased min-h-screen flex items-center justify-center sm:p-4 selection:bg-rose-500/30 selection:text-rose-200">
+<body class="bg-[#050507] text-zinc-100 antialiased min-h-screen flex items-center justify-center sm:p-4 selection:bg-rose-500/30 selection:text-rose-200">
 
   <!-- Mobile App Shell Container -->
-  <div id="app-shell" class="w-full h-[100dvh] sm:h-[830px] sm:max-h-[93vh] sm:max-w-[420px] bg-[#0A0A0C] sm:rounded-[38px] sm:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] sm:border-[5px] sm:border-zinc-800/90 flex flex-col overflow-hidden relative">
+  <div id="app-shell" class="w-full max-w-[420px] mx-auto min-h-screen sm:min-h-0 sm:h-[830px] sm:max-h-[93vh] bg-[#09090B] sm:rounded-[38px] sm:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.92)] sm:border-[5px] sm:border-[#26262C] flex flex-col overflow-x-hidden relative">
 
     <!-- Ambient Dynamic Glow Behind Timer -->
     <div id="ambient-glow" class="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-48 rounded-full bg-rose-500/15 blur-3xl transition-colors duration-500"></div>
 
     <!-- Floating In-App Reminder Banner -->
-    <div id="reminder-banner" class="hidden absolute top-3 left-3 right-3 z-50 bg-zinc-900/95 backdrop-blur-xl text-white rounded-2xl p-3.5 shadow-2xl border border-white/15 transition-all duration-300 -translate-y-4 opacity-0">
+    <div id="reminder-banner" class="hidden fixed sm:absolute top-3 left-3 right-3 max-w-[396px] mx-auto z-50 bg-[#111114]/95 backdrop-blur-xl text-white rounded-2xl p-3.5 shadow-2xl border border-[#26262C] transition-all duration-300 -translate-y-4 opacity-0">
       <div class="flex items-start gap-3">
         <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -151,10 +205,10 @@
           </div>
           <p id="reminder-banner-title" class="text-sm font-semibold text-white truncate mt-0.5">Task title</p>
           <div class="flex items-center gap-2 mt-2.5">
-            <button id="reminder-focus-btn" type="button" class="px-3 py-1 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold text-white transition">
+            <button id="reminder-focus-btn" type="button" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold text-white transition">
               Start Now
             </button>
-            <button id="reminder-dismiss-btn" type="button" class="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium text-zinc-300 transition">
+            <button id="reminder-dismiss-btn" type="button" class="px-3 py-1.5 rounded-lg bg-[#18181C] hover:bg-white/15 border border-[#26262C] text-xs font-medium text-zinc-300 transition">
               Dismiss
             </button>
           </div>
@@ -163,86 +217,80 @@
     </div>
 
     <!-- Auto-Advance / Queue Notification Toast -->
-    <div id="transition-toast" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-40 px-3.5 py-2 rounded-full bg-zinc-900/95 backdrop-blur-md border border-white/15 shadow-xl flex items-center gap-2 transition-all duration-300 opacity-0 -translate-y-2 pointer-events-none max-w-[90%]">
+    <div id="transition-toast" class="hidden fixed sm:absolute top-16 left-1/2 -translate-x-1/2 z-40 px-3.5 py-2 rounded-full bg-[#111114]/95 backdrop-blur-md border border-[#26262C] shadow-xl flex items-center gap-2 transition-all duration-300 opacity-0 -translate-y-2 pointer-events-none max-w-[90%]">
       <span id="toast-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
       <span id="toast-message" class="text-xs font-medium text-zinc-100 truncate">Starting next session...</span>
     </div>
 
     <!-- Top App Header -->
-    <header class="px-5 pt-4 pb-2.5 flex items-center justify-between border-b border-white/[0.07] shrink-0 relative z-10">
-      <div class="flex items-center gap-2.5">
-        <div id="brand-badge" class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20 transition-colors duration-300">
+    <header class="px-5 pt-4 pb-3 flex items-center justify-between border-b border-[#26262C] bg-[#09090B]/85 backdrop-blur-md shrink-0 relative z-20">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div id="brand-badge" class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20 transition-colors duration-300 shrink-0">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="9" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2" />
           </svg>
         </div>
-        <div>
-          <h1 class="font-heading text-sm font-bold tracking-tight text-white leading-none">FocusFlow</h1>
-          <p id="header-date-label" class="text-[11px] text-zinc-400 mt-0.5">Today</p>
+        <div class="min-w-0">
+          <h1 class="text-base font-bold tracking-tight text-white leading-none truncate">FocusFlow</h1>
+          <p id="header-date-label" class="text-[11px] text-zinc-400 mt-0.5 truncate">Today</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-1.5">
-        <!-- Screen Awake Indicator Pill (Shown when timer is running) -->
-        <div id="wakelock-pill" class="hidden px-2 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center gap-1" title="Screen Wake Lock active — phone stays awake while timer plays">
-          <svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Screen Awake Status Pill (Visible when timer is actively running) -->
+        <div id="wakelock-pill" class="hidden px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center gap-1" title="Screen Wake Lock active — phone stays awake while timer plays">
+          <svg class="w-3 h-3 text-amber-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="4" />
             <path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
           </svg>
-          <span class="text-[9px] font-bold uppercase tracking-wider text-amber-300">Awake</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">Awake</span>
         </div>
 
-        <!-- Completed Focus Counter Pill -->
-        <div class="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10 flex items-center gap-1.5" title="Focus sessions completed today">
-          <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-          <span id="session-count-label" class="text-xs font-mono font-semibold text-zinc-200">0</span>
-        </div>
-
-        <!-- System Notifications Permission Toggle (Colored Icon State) -->
-        <button id="notif-toggle-btn" type="button" class="p-2 rounded-xl border border-amber-500/25 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition active:scale-95" title="Tap to enable system notifications" aria-label="Notifications">
-          <svg id="icon-notif-bell" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+        <!-- Colored Notification Bell Icon Button (No Dot Badge) -->
+        <button id="notif-toggle-btn" type="button" class="p-2 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition active:scale-95" title="Enable system notifications" aria-label="Notifications">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
         </button>
 
-        <!-- Sound Toggle -->
-        <button id="sound-toggle-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Toggle chime sound" aria-label="Toggle sound">
-          <svg id="icon-sound-on" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-          </svg>
-          <svg id="icon-sound-off" class="w-4 h-4 hidden text-zinc-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-          </svg>
-        </button>
-
-        <!-- Timer Duration Settings Button -->
-        <button id="open-settings-btn" type="button" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition" title="Configure default timer durations" aria-label="Settings">
+        <!-- Duration Settings Button (Sliders Icon) -->
+        <button id="open-settings-btn" type="button" class="p-2 rounded-xl bg-[#18181C] border border-[#26262C] text-zinc-300 hover:text-white hover:border-white/25 transition active:scale-95" title="Customize default durations" aria-label="Duration Settings">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110 4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
           </svg>
         </button>
       </div>
     </header>
 
-    <!-- MAIN CONTENT CONTAINER -->
-    <main class="flex-1 overflow-y-auto relative z-10 flex flex-col">
+    <!-- MAIN WORKSPACE -->
+    <main id="swipe-workspace" class="flex-1 overflow-y-auto overflow-x-hidden relative z-10 flex flex-col">
 
-      <!-- ==================== TAB 1: POMODORO TIMER VIEW ==================== -->
-      <section id="view-timer" class="flex-1 flex flex-col justify-between px-4 sm:px-5 pt-3 pb-24 gap-2.5">
+      <!-- ==================== PAGE 1: POMODORO TIMER (#page-timer) ==================== -->
+      <section id="page-timer" class="flex-1 flex flex-col justify-between px-5 pt-4 pb-28 gap-3">
 
-        <!-- Minimal Auto-Play Status Pill -->
-        <div class="flex items-center justify-center shrink-0">
-          <button id="autoplay-toggle-btn" type="button" class="px-3.5 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.09] backdrop-blur-md border border-white/10 flex items-center gap-2 transition active:scale-95" title="Toggle continuous auto-play">
-            <span id="autoplay-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all"></span>
+        <!-- Top Status Row: ONLY Clean Auto-Play Toggle Pill + Optional Active Task Title Badge -->
+        <div class="flex flex-col items-center justify-center gap-2 shrink-0">
+          <button id="autoplay-toggle-btn" type="button" class="px-3.5 py-1.5 rounded-full bg-[#111114]/90 hover:bg-[#18181C] backdrop-blur-md border border-[#26262C] flex items-center gap-2 transition active:scale-95" title="Toggle continuous auto-play">
+            <span id="autoplay-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.85)] transition-all"></span>
             <span id="autoplay-status-text" class="text-xs font-medium text-zinc-200">
               Auto-Play: <strong class="text-emerald-400 font-semibold">ON</strong>
             </span>
           </button>
+
+          <!-- Active Running Scheduled Task Title Badge (Shown only when a scheduled task sequence is active) -->
+          <div id="active-task-badge" class="hidden max-w-full px-3 py-1 rounded-full bg-[#18181C] border border-[#26262C] flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0"></span>
+            <span id="active-task-badge-title" class="text-[11px] font-semibold text-zinc-200 truncate">Task Sequence</span>
+            <button id="clear-active-task-btn" type="button" class="text-zinc-500 hover:text-zinc-200 ml-0.5 shrink-0" title="Detach task sequence" aria-label="Detach task sequence">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <!-- Enlarged Circular Progress Timer Ring with Integrated Icon-Only Controls -->
+        <!-- Enlarged Circular SVG Progress Ring (284px mobile / 308px sm) -->
         <div class="flex flex-col items-center justify-center my-auto relative shrink-0">
           <div class="relative w-[284px] h-[284px] sm:w-[308px] sm:h-[308px] flex items-center justify-center">
             <svg class="w-full h-full -rotate-90 drop-shadow-sm" viewBox="0 0 240 240">
@@ -251,7 +299,7 @@
                 cy="120"
                 r="106"
                 fill="none"
-                stroke="rgba(255,255,255,0.08)"
+                stroke="#18181C"
                 stroke-width="8.5"
               />
               <circle
@@ -269,39 +317,40 @@
               />
             </svg>
 
-            <!-- Center Stack: Mode Badge -> Countdown -> +/- Stepper -> Icon-Only Play & Stop -->
-            <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-8 pt-2">
-              <span id="mode-badge-text" class="font-heading text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-rose-400 mb-1">
+            <!-- Interior Stack: Mode Label, Inline +/- Minute Steppers, Countdown MM:SS, Icon-Only Play/Pause & Stop -->
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-7 pt-1">
+              <span id="mode-badge-text" class="text-[11px] font-bold uppercase tracking-widest text-rose-400 mb-1">
                 Focus Session
               </span>
-              <div id="timer-display" class="font-mono text-[44px] sm:text-[48px] font-extrabold tracking-tight text-white tabular-nums leading-none">
-                25:00
-              </div>
 
-              <!-- Quick +/- Minute Adjuster -->
-              <div class="flex items-center gap-2 mt-2.5 bg-white/[0.06] backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
-                <button id="step-minus-btn" type="button" class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs flex items-center justify-center transition active:scale-90" title="Decrease duration by 1 min" aria-label="Decrease duration by 1 minute">
+              <!-- Inline '-' / '+' Minute Stepper Buttons -->
+              <div class="flex items-center gap-2 mb-1.5 bg-[#18181C]/90 px-2.5 py-0.5 rounded-full border border-[#26262C]">
+                <button id="step-minus-btn" type="button" class="w-6 h-6 rounded-full hover:bg-white/10 text-zinc-300 font-bold text-sm flex items-center justify-center transition active:scale-90" title="Decrease duration by 1 minute" aria-label="Decrease duration by 1 minute">
                   −
                 </button>
-                <span id="duration-pill-label" class="text-[11px] font-mono font-semibold text-zinc-200 min-w-[44px]">25 min</span>
-                <button id="step-plus-btn" type="button" class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs flex items-center justify-center transition active:scale-90" title="Increase duration by 1 min" aria-label="Increase duration by 1 minute">
+                <span id="duration-pill-label" class="text-[11px] font-mono font-semibold text-zinc-300 min-w-[44px]">25 min</span>
+                <button id="step-plus-btn" type="button" class="w-6 h-6 rounded-full hover:bg-white/10 text-zinc-300 font-bold text-sm flex items-center justify-center transition active:scale-90" title="Increase duration by 1 minute" aria-label="Increase duration by 1 minute">
                   +
                 </button>
               </div>
 
-              <!-- Integrated Icon-Only Play/Pause & Stop Controls Inside Circle -->
-              <div class="flex items-center justify-center gap-3 mt-3">
-                <button id="start-pause-btn" type="button" aria-label="Start or pause timer" title="Start / Pause" class="w-11 h-11 rounded-full bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/25 flex items-center justify-center transition-all active:scale-90">
+              <!-- Large Tabular Countdown MM:SS -->
+              <div id="timer-display" class="font-mono text-[46px] sm:text-[50px] font-extrabold tracking-tight text-white tabular-nums leading-none">
+                25:00
+              </div>
+
+              <!-- Lower Interior: Icon-Only Play/Pause & Stop Buttons (No Visible Labels) -->
+              <div class="flex items-center justify-center gap-3.5 mt-3.5">
+                <button id="start-pause-btn" type="button" aria-label="Start timer" title="Start" class="w-12 h-12 rounded-full bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/25 flex items-center justify-center transition-all active:scale-90">
                   <svg id="play-icon" class="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z" />
                   </svg>
                   <svg id="pause-icon" class="w-5 h-5 fill-current hidden" viewBox="0 0 24 24">
                     <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                   </svg>
-                  <span id="start-pause-text" class="sr-only">Start Focus</span>
                 </button>
 
-                <button id="reset-btn" type="button" aria-label="Stop and reset timer" title="Stop and reset" class="w-11 h-11 rounded-full bg-white/[0.08] hover:bg-white/[0.16] border border-white/15 text-zinc-200 flex items-center justify-center transition-all active:scale-90">
+                <button id="reset-btn" type="button" aria-label="Stop and reset timer" title="Stop and reset" class="w-12 h-12 rounded-full bg-[#18181C] hover:bg-white/15 border border-[#26262C] text-zinc-200 flex items-center justify-center transition-all active:scale-90">
                   <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                     <rect x="6" y="6" width="12" height="12" rx="2.5" />
                   </svg>
@@ -311,69 +360,40 @@
           </div>
         </div>
 
-        <!-- 4 Category Mode Quick-Switch Grid (Below Timer Circle) -->
-        <div class="grid grid-cols-2 gap-1.5 bg-white/[0.04] backdrop-blur-md p-1.5 rounded-2xl border border-white/[0.08] shrink-0">
-          <button type="button" data-mode="focus" class="mode-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 bg-rose-500/20 text-rose-300 border border-rose-500/30">
+        <!-- 4-Button Category Grid Directly Below Timer Circle (No Legend Dots) -->
+        <div class="grid grid-cols-2 gap-2 bg-[#111114] p-2 rounded-2xl border border-[#26262C] shrink-0">
+          <button type="button" data-mode="focus" class="mode-btn py-3 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 bg-rose-500/20 text-rose-300 border border-rose-500/35">
             Focus
           </button>
-          <button type="button" data-mode="short" class="mode-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 text-zinc-400 hover:text-zinc-200">
+          <button type="button" data-mode="short" class="mode-btn py-3 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 bg-[#18181C]/60 text-zinc-400 hover:text-zinc-200 border border-transparent">
             Short Rest
           </button>
-          <button type="button" data-mode="long" class="mode-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 text-zinc-400 hover:text-zinc-200">
+          <button type="button" data-mode="long" class="mode-btn py-3 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 bg-[#18181C]/60 text-zinc-400 hover:text-zinc-200 border border-transparent">
             Long Rest
           </button>
-          <button type="button" data-mode="lunch" class="mode-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 text-zinc-400 hover:text-zinc-200">
+          <button type="button" data-mode="lunch" class="mode-btn py-3 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 bg-[#18181C]/60 text-zinc-400 hover:text-zinc-200 border border-transparent">
             Lunch Break
           </button>
         </div>
-
-        <!-- Active Structured Task Card -->
-        <div class="bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border border-white/[0.08] shrink-0">
-          <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Active Task</span>
-            <button id="switch-to-planner-btn" type="button" class="text-xs font-semibold text-rose-400 hover:text-rose-300">
-              Schedule →
-            </button>
-          </div>
-          <div id="active-task-container" class="flex items-center justify-between gap-2.5">
-            <div class="flex items-center gap-2.5 min-w-0 flex-1">
-              <button id="complete-active-task-btn" type="button" class="w-5 h-5 rounded-full border-2 border-zinc-600 hover:border-rose-500 flex items-center justify-center shrink-0 transition" title="Mark entire task complete" aria-label="Mark active task complete">
-                <span class="w-2 h-2 rounded-full bg-transparent"></span>
-              </button>
-              <div class="min-w-0 flex-1">
-                <p id="active-task-title" class="text-xs sm:text-[13px] font-semibold text-zinc-100 truncate">No active task selected</p>
-                <div id="active-task-meta" class="hidden flex items-center gap-1.5 mt-1">
-                  <span id="active-task-mode-badge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">Focus</span>
-                  <span id="active-task-block-note" class="text-[10px] text-zinc-400 truncate">Deep work</span>
-                </div>
-              </div>
-            </div>
-            <button id="edit-active-task-btn" type="button" class="hidden p-2 rounded-xl bg-white/[0.06] hover:bg-white/15 text-zinc-300 transition shrink-0" title="Edit task structure" aria-label="Edit active task">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-            </button>
-          </div>
-        </div>
       </section>
 
-      <!-- ==================== TAB 2: CALENDAR & STRUCTURED TASKS ==================== -->
-      <section id="view-planner" class="hidden flex-1 flex flex-col px-4 pt-3 pb-24 gap-2.5 overflow-y-auto">
+      <!-- ==================== PAGE 2: CALENDAR / SCHEDULE (#page-schedule) ==================== -->
+      <section id="page-schedule" class="hidden flex-1 flex flex-col px-4 pt-3.5 pb-28 gap-3 overflow-y-auto overflow-x-hidden">
 
-        <!-- Compact Monthly Calendar Card -->
-        <div class="bg-white/[0.04] backdrop-blur-md rounded-2xl p-3 border border-white/[0.08]">
-          <div class="flex items-center justify-between mb-2">
-            <h2 id="calendar-month-year" class="font-heading text-xs font-bold text-white">November 2026</h2>
-            <div class="flex items-center gap-1">
-              <button id="cal-today-btn" type="button" class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 transition">
+        <!-- Interactive Monthly Calendar Card -->
+        <div class="bg-[#111114] rounded-2xl p-3.5 border border-[#26262C]">
+          <div class="flex items-center justify-between mb-2.5">
+            <h2 id="calendar-month-year" class="text-sm font-bold text-white">November 2026</h2>
+            <div class="flex items-center gap-1.5">
+              <button id="cal-today-btn" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 hover:bg-rose-500/25 transition">
                 Today
               </button>
-              <button id="cal-prev-btn" type="button" class="p-1 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition" aria-label="Previous Month">
+              <button id="cal-prev-btn" type="button" class="p-1.5 rounded-lg bg-[#18181C] border border-[#26262C] text-zinc-400 hover:text-white transition" aria-label="Previous Month">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <button id="cal-next-btn" type="button" class="p-1 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition" aria-label="Next Month">
+              <button id="cal-next-btn" type="button" class="p-1.5 rounded-lg bg-[#18181C] border border-[#26262C] text-zinc-400 hover:text-white transition" aria-label="Next Month">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
@@ -382,7 +402,7 @@
           </div>
 
           <!-- Weekday Headers -->
-          <div class="grid grid-cols-7 text-center text-[10px] font-semibold text-zinc-500 mb-1">
+          <div class="grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
             <span>Sun</span>
             <span>Mon</span>
             <span>Tue</span>
@@ -393,31 +413,31 @@
           </div>
 
           <!-- Calendar Dates Grid -->
-          <div id="calendar-days-grid" class="grid grid-cols-7 gap-y-0.5 text-center"></div>
+          <div id="calendar-days-grid" class="grid grid-cols-7 gap-y-1 text-center"></div>
         </div>
 
-        <!-- Selected Date Header + Create Structured Task Button -->
+        <!-- Selected Date Header + New Task Button -->
         <div class="flex items-center justify-between gap-2 px-0.5">
           <div class="min-w-0">
-            <h3 id="selected-date-heading" class="font-heading text-sm font-bold text-white truncate">Tasks for Today</h3>
+            <h3 id="selected-date-heading" class="text-sm font-bold text-white truncate">Tasks for Today</h3>
             <p id="selected-date-subtext" class="text-[11px] text-zinc-400 truncate">0 scheduled tasks</p>
           </div>
-          <button id="open-add-task-btn" type="button" class="px-3.5 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-[11px] font-heading font-bold flex items-center gap-1.5 shadow-lg shadow-rose-500/20 transition active:scale-95 shrink-0">
+          <button id="open-add-task-btn" type="button" class="px-3.5 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-rose-500/20 transition active:scale-95 shrink-0">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            <span>New Task</span>
+            <span>+ New Task</span>
           </button>
         </div>
 
-        <!-- Structured Task List Container -->
+        <!-- Minimalist Scheduled Task Cards List -->
         <div id="task-list-container" class="flex-1 flex flex-col gap-2.5 pb-2"></div>
       </section>
 
     </main>
 
     <!-- Subtle Bottom Gradient Fade Mask Behind Floating Pill Navbar -->
-    <div class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0A0A0C] via-[#0A0A0C]/80 to-transparent z-20"></div>
+    <div class="pointer-events-none fixed sm:absolute inset-x-0 bottom-0 max-w-[420px] mx-auto h-24 bg-gradient-to-t from-[#09090B] via-[#09090B]/85 to-transparent z-20"></div>
 
     <!-- Floating Apple Liquid-Glass Icon-Only Pill Navigation Bar -->
     <nav class="liquid-pill-nav flex items-center justify-center gap-2" aria-label="Primary Navigation">
@@ -428,24 +448,24 @@
         </svg>
       </button>
 
-      <button type="button" data-tab="planner" aria-label="Schedule" title="Schedule" class="nav-tab-btn liquid-pill-tab flex items-center justify-center cursor-pointer relative">
+      <button type="button" data-tab="schedule" aria-label="Schedule" title="Schedule" class="nav-tab-btn liquid-pill-tab flex items-center justify-center cursor-pointer relative">
         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
           <rect x="3" y="4" width="18" height="18" rx="3" />
           <path stroke-linecap="round" stroke-linejoin="round" d="M16 2v4M8 2v4M3 10h18" />
         </svg>
-        <span id="nav-task-badge" class="hidden absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center shadow-sm shadow-rose-500/50 ring-2 ring-[#141418]">0</span>
+        <span id="nav-task-badge" class="hidden absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-mono font-bold flex items-center justify-center shadow-sm shadow-rose-500/50 ring-2 ring-[#18181C]">0</span>
       </button>
     </nav>
 
-    <!-- ==================== MODAL 1: DURATION & CYCLE SETTINGS DRAWER ==================== -->
-    <div id="settings-modal" class="hidden absolute inset-0 z-40 bg-black/75 backdrop-blur-sm flex items-end justify-center">
-      <div class="bg-[#16161B] w-full rounded-t-3xl p-5 shadow-2xl border-t border-white/15">
+    <!-- ==================== MODAL 1: DURATION SETTINGS DRAWER ==================== -->
+    <div id="settings-modal" class="hidden fixed sm:absolute inset-0 z-40 bg-black/75 backdrop-blur-sm flex items-end justify-center overflow-x-hidden">
+      <div class="bg-[#111114] w-full max-w-[420px] rounded-t-3xl p-5 shadow-2xl border-t border-[#26262C] overflow-x-hidden">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="font-heading text-base font-bold text-white">Default Durations & Loop</h3>
-            <p class="text-xs text-zinc-400">Base minutes for new blocks & Default Loop</p>
+            <h3 class="text-base font-bold text-white">Default Durations</h3>
+            <p class="text-xs text-zinc-400">Customize base minutes for each timer mode</p>
           </div>
-          <button id="close-settings-btn" type="button" class="p-2 rounded-full bg-white/10 text-zinc-400 hover:text-white transition" aria-label="Close settings">
+          <button id="close-settings-btn" type="button" class="p-2 rounded-full bg-[#18181C] border border-[#26262C] text-zinc-400 hover:text-white transition" aria-label="Close settings">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -454,103 +474,78 @@
 
         <div class="space-y-2.5">
           <!-- Focus Duration -->
-          <div class="flex items-center justify-between p-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/20">
-            <div class="flex items-center gap-2.5">
-              <span class="w-3 h-3 rounded-full bg-rose-500"></span>
-              <div>
-                <p class="text-xs font-semibold text-white">Focus Session</p>
-                <p class="text-[10px] text-zinc-400">Default work interval</p>
-              </div>
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-[#18181C] border border-[#26262C]">
+            <div>
+              <p class="text-xs font-semibold text-rose-400">Focus</p>
+              <p class="text-[11px] text-zinc-400">Work session minutes</p>
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" data-setting-step="focus:-5" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">−5</button>
-              <input id="input-dur-focus" type="number" min="1" max="180" value="25" class="w-12 text-center font-mono font-bold text-xs py-1.5 rounded-lg bg-zinc-900 border border-white/15 text-white" />
-              <button type="button" data-setting-step="focus:5" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">+5</button>
+              <button type="button" data-setting-step="focus:-5" class="w-8 h-8 rounded-lg bg-[#111114] border border-[#26262C] hover:border-white/20 text-zinc-200 font-bold text-xs">−5</button>
+              <input id="input-dur-focus" type="number" min="1" max="180" value="25" class="safe-input w-14 text-center font-mono font-bold py-1.5 rounded-lg" />
+              <button type="button" data-setting-step="focus:5" class="w-8 h-8 rounded-lg bg-[#111114] border border-[#26262C] hover:border-white/20 text-zinc-200 font-bold text-xs">+5</button>
             </div>
           </div>
 
           <!-- Short Rest Duration -->
-          <div class="flex items-center justify-between p-2.5 rounded-2xl bg-teal-500/10 border border-teal-500/20">
-            <div class="flex items-center gap-2.5">
-              <span class="w-3 h-3 rounded-full bg-teal-400"></span>
-              <div>
-                <p class="text-xs font-semibold text-white">Short Rest</p>
-                <p class="text-[10px] text-zinc-400">Default quick rest</p>
-              </div>
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-[#18181C] border border-[#26262C]">
+            <div>
+              <p class="text-xs font-semibold text-teal-400">Short Rest</p>
+              <p class="text-[11px] text-zinc-400">Quick break minutes</p>
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" data-setting-step="short:-1" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">−1</button>
-              <input id="input-dur-short" type="number" min="1" max="60" value="5" class="w-12 text-center font-mono font-bold text-xs py-1.5 rounded-lg bg-zinc-900 border border-white/15 text-white" />
-              <button type="button" data-setting-step="short:1" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">+1</button>
+              <button type="button" data-setting-step="short:-1" class="w-8 h-8 rounded-lg bg-[#111114] border border-[#26262C] hover:border-white/20 text-zinc-200 font-bold text-xs">−1</button>
+              <input id="input-dur-short" type="number" min="1" max="60" value="5" class="safe-input w-14 text-center font-mono font-bold py-1.5 rounded-lg" />
+              <button type="button" data-setting-step="short:1" class="w-8 h-8 rounded-lg bg-[#111114] border border-[#26262C] hover:border-white/20 text-zinc-200 font-bold text-xs">+1</button>
             </div>
           </div>
 
           <!-- Long Rest Duration -->
-          <div class="flex items-center justify-between p-2.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
-            <div class="flex items-center gap-2.5">
-              <span class="w-3 h-3 rounded-full bg-indigo-400"></span>
-              <div>
-                <p class="text-xs font-semibold text-white">Long Rest</p>
-                <p class="text-[10px] text-zinc-400">Deep recharge break</p>
-              </div>
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-[#18181C] border border-[#26262C]">
+            <div>
+              <p class="text-xs font-semibold text-indigo-400">Long Rest</p>
+              <p class="text-[11px] text-zinc-400">Extended rest minutes</p>
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" data-setting-step="long:-5" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">−5</button>
-              <input id="input-dur-long" type="number" min="1" max="90" value="15" class="w-12 text-center font-mono font-bold text-xs py-1.5 rounded-lg bg-zinc-900 border border-white/15 text-white" />
-              <button type="button" data-setting-step="long:5" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">+5</button>
+              <button type="button" data-setting-step="long:-5" class="w-8 h-8 rounded-lg bg-[#111114] border border-[#26262C] hover:border-white/20 text-zinc-200 font-bold text-xs">−5</button>
+              <input id="input-dur-long" type="number" min="1" max="90" value="15" class="safe-input w-14 text-center font-mono font-bold py-1.5 rounded-lg" />
+              <button type="button" data-setting-step="long:5" class="w-8 h-8 rounded-lg bg-[#111114] border border-[#26262C] hover:border-white/20 text-zinc-200 font-bold text-xs">+5</button>
             </div>
           </div>
 
           <!-- Lunch Break Duration -->
-          <div class="flex items-center justify-between p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-            <div class="flex items-center gap-2.5">
-              <span class="w-3 h-3 rounded-full bg-amber-400"></span>
-              <div>
-                <p class="text-xs font-semibold text-white">Lunch Break</p>
-                <p class="text-[10px] text-zinc-400">Midday meal break</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <button type="button" data-setting-step="lunch:-5" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">−5</button>
-              <input id="input-dur-lunch" type="number" min="5" max="180" value="45" class="w-12 text-center font-mono font-bold text-xs py-1.5 rounded-lg bg-zinc-900 border border-white/15 text-white" />
-              <button type="button" data-setting-step="lunch:5" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">+5</button>
-            </div>
-          </div>
-
-          <!-- Long Rest Interval Setting -->
-          <div class="flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.04] border border-white/10">
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-[#18181C] border border-[#26262C]">
             <div>
-              <p class="text-xs font-semibold text-zinc-200">Long Rest Every (Default Loop)</p>
-              <p class="text-[10px] text-zinc-400">Focus sessions before Long Rest</p>
+              <p class="text-xs font-semibold text-amber-400">Lunch Break</p>
+              <p class="text-[11px] text-zinc-400">Meal break minutes</p>
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" id="interval-minus-btn" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">−</button>
-              <input id="input-long-interval" type="number" min="2" max="10" value="4" class="w-12 text-center font-mono font-bold text-xs py-1.5 rounded-lg bg-zinc-900 border border-white/15 text-white" />
-              <button type="button" id="interval-plus-btn" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 font-bold text-xs">+</button>
+              <button type="button" data-setting-step="lunch:-5" class="w-8 h-8 rounded-lg bg-[#111114] border border-[#26262C] hover:border-white/20 text-zinc-200 font-bold text-xs">−5</button>
+              <input id="input-dur-lunch" type="number" min="5" max="180" value="60" class="safe-input w-14 text-center font-mono font-bold py-1.5 rounded-lg" />
+              <button type="button" data-setting-step="lunch:5" class="w-8 h-8 rounded-lg bg-[#111114] border border-[#26262C] hover:border-white/20 text-zinc-200 font-bold text-xs">+5</button>
             </div>
           </div>
         </div>
 
         <div class="flex items-center gap-2.5 mt-4">
-          <button id="reset-defaults-btn" type="button" class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-zinc-300 text-xs font-semibold transition">
+          <button id="reset-defaults-btn" type="button" class="px-4 py-3 rounded-xl bg-[#18181C] border border-[#26262C] hover:border-white/20 text-zinc-300 text-xs font-semibold transition">
             Defaults
           </button>
-          <button id="save-settings-btn" type="button" class="flex-1 py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-heading text-xs uppercase tracking-wider font-bold shadow-lg shadow-rose-500/20 transition">
+          <button id="save-settings-btn" type="button" class="flex-1 py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs uppercase tracking-wider font-bold shadow-lg shadow-rose-500/20 transition">
             Save Settings
           </button>
         </div>
       </div>
     </div>
 
-    <!-- ==================== MODAL 2: UNIFIED TASK + TIMER STRUCTURE BUILDER ==================== -->
-    <div id="task-modal" class="hidden absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex items-end justify-center overflow-x-hidden">
-      <form id="add-task-form" class="bg-[#141418] w-full max-w-full overflow-x-hidden rounded-t-3xl p-4 sm:p-5 shadow-2xl border-t border-white/15 max-h-[92%] flex flex-col">
+    <!-- ==================== MODAL 2: UNIFIED TASK + TIMER STRUCTURE BUILDER (#task-modal) ==================== -->
+    <div id="task-modal" class="hidden fixed sm:absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex items-end justify-center overflow-x-hidden">
+      <form id="add-task-form" class="bg-[#111114] w-full max-w-[420px] overflow-x-hidden rounded-t-3xl p-4 sm:p-5 shadow-2xl border-t border-[#26262C] max-h-[92vh] sm:max-h-[92%] flex flex-col">
         <div class="flex items-center justify-between mb-3 shrink-0">
-          <div>
-            <h3 id="task-modal-heading" class="font-heading text-base font-bold text-white">Plan Structured Task</h3>
-            <p class="text-[11px] text-zinc-400">Organize work, breaks & lunch from start to finish</p>
+          <div class="min-w-0">
+            <h3 id="task-modal-heading" class="text-base font-bold text-white truncate">New Scheduled Task</h3>
+            <p class="text-[11px] text-zinc-400 truncate">Build your complete work-to-finish sequence</p>
           </div>
-          <button type="button" id="close-task-modal-btn" class="p-2 rounded-full bg-white/10 text-zinc-400 hover:text-white transition" aria-label="Close task modal">
+          <button type="button" id="close-task-modal-btn" class="p-2 rounded-full bg-[#18181C] border border-[#26262C] text-zinc-400 hover:text-white transition shrink-0" aria-label="Close task modal">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -559,48 +554,48 @@
 
         <input type="hidden" id="editing-task-id" value="" />
 
-        <!-- Scrollable Form Body -->
-        <div class="space-y-3 overflow-y-auto overflow-x-hidden pr-0.5 flex-1">
+        <!-- Scrollable Form Body (Strict Safe-Zone Containment) -->
+        <div class="space-y-3 overflow-y-auto overflow-x-hidden flex-1 min-w-0">
           <!-- Task Title -->
-          <div class="min-w-0">
-            <label for="task-title-input" class="block text-[11px] font-semibold text-zinc-300 mb-1">Task Title / Goal</label>
-            <input id="task-title-input" type="text" required placeholder="e.g., Q4 Strategy Deck or Deep Coding Sprint"
-              class="w-full min-w-0 px-3.5 py-2.5 rounded-xl bg-zinc-900/90 border border-white/15 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500" />
+          <div class="w-full min-w-0">
+            <label for="task-title-input" class="block text-[11px] font-semibold text-zinc-300 mb-1">Task Title</label>
+            <input id="task-title-input" type="text" required placeholder="e.g. Full Workday Routine"
+              class="safe-input px-3 py-2.5 rounded-xl text-sm placeholder:text-zinc-500 text-ellipsis overflow-hidden" />
           </div>
 
-          <!-- Date & Optional Reminder Row -->
-          <div class="grid grid-cols-2 gap-2.5">
-            <div class="min-w-0">
+          <!-- Responsive Date & Reminder Time Grid -->
+          <div class="grid grid-cols-1 min-[350px]:grid-cols-2 gap-2.5 w-full min-w-0">
+            <div class="min-w-0 w-full">
               <label for="task-date-input" class="block text-[11px] font-semibold text-zinc-300 mb-1 truncate">Scheduled Date</label>
               <input id="task-date-input" type="date" required
-                class="w-full max-w-full min-w-0 box-border appearance-none px-2.5 py-2 rounded-xl bg-zinc-900/90 border border-white/15 text-[12px] leading-tight text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
+                class="safe-input px-3 py-2 rounded-xl text-xs [color-scheme:dark]" />
             </div>
 
-            <div class="min-w-0">
+            <div class="min-w-0 w-full">
               <div class="flex items-center justify-between gap-1 mb-1">
-                <label for="task-time-input" class="text-[11px] font-semibold text-zinc-300 truncate">Reminder</label>
-                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <label for="task-time-input" class="text-[11px] font-semibold text-zinc-300 truncate">Reminder Time</label>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0" title="Enable reminder alert">
                   <input id="task-reminder-toggle" type="checkbox" class="sr-only peer" />
                   <div class="w-7 h-4 bg-zinc-700 rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-rose-500"></div>
                 </label>
               </div>
-              <div id="reminder-time-wrapper" class="min-w-0 opacity-40 pointer-events-none transition">
+              <div id="reminder-time-wrapper" class="min-w-0 w-full opacity-40 pointer-events-none transition">
                 <input id="task-time-input" type="time"
-                  class="w-full max-w-full min-w-0 box-border appearance-none px-2.5 py-2 rounded-xl bg-zinc-900/90 border border-white/15 text-[12px] leading-tight font-mono font-semibold text-white focus:outline-none focus:ring-2 focus:ring-rose-500 [color-scheme:dark]" />
+                  class="safe-input px-3 py-2 rounded-xl text-xs font-mono font-semibold [color-scheme:dark]" />
               </div>
             </div>
           </div>
 
           <!-- Timer Structure Builder Section -->
-          <div class="p-3 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
+          <div class="p-3 rounded-2xl bg-[#18181C]/70 border border-[#26262C] space-y-2.5 min-w-0 w-full overflow-x-hidden">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">Timer Structure (Work → Finish)</span>
-              <!-- Starter Presets -->
-              <div class="flex items-center gap-1">
-                <button type="button" data-preset="workday" class="px-2 py-0.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/25 text-[10px] font-semibold text-amber-300 transition" title="Populate 8hr Workday (25/5) + 1hr Lunch">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-300 truncate">Timer Sequence</span>
+              <!-- Two One-Tap Presets: 'Workday' & '4hr' -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" data-preset="workday" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-[11px] font-semibold text-amber-300 transition active:scale-95" title="Full 9-hour 09:00-18:00 25/5 structure with 60m Lunch Break">
                   Workday
                 </button>
-                <button type="button" data-preset="fourhr" class="px-2 py-0.5 rounded-md bg-white/[0.07] hover:bg-white/15 border border-white/10 text-[10px] font-semibold text-zinc-300 transition" title="Populate 4hr Half-Day (25/5)">
+                <button type="button" data-preset="4hr" class="px-2.5 py-1 rounded-lg bg-[#111114] hover:bg-white/10 border border-[#26262C] text-[11px] font-semibold text-zinc-200 transition active:scale-95" title="4-hour 240m 25/5 structure with mid-session 15m Long Rest">
                   4hr
                 </button>
               </div>
@@ -608,59 +603,60 @@
 
             <!-- Quick-Add Pills -->
             <div class="grid grid-cols-4 gap-1.5">
-              <button type="button" data-modal-quick="focus" class="py-1.5 px-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-[10px] font-bold transition active:scale-95">
+              <button type="button" data-modal-quick="focus" class="py-1.5 px-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-[11px] font-bold transition active:scale-95">
                 + Focus
               </button>
-              <button type="button" data-modal-quick="short" class="py-1.5 px-1 rounded-lg bg-teal-500/15 hover:bg-teal-500/25 border border-teal-500/30 text-teal-300 text-[10px] font-bold transition active:scale-95">
+              <button type="button" data-modal-quick="short" class="py-1.5 px-1 rounded-lg bg-teal-500/15 hover:bg-teal-500/25 border border-teal-500/30 text-teal-300 text-[11px] font-bold transition active:scale-95">
                 + Rest
               </button>
-              <button type="button" data-modal-quick="long" class="py-1.5 px-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold transition active:scale-95">
+              <button type="button" data-modal-quick="long" class="py-1.5 px-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-[11px] font-bold transition active:scale-95">
                 + Long
               </button>
-              <button type="button" data-modal-quick="lunch" class="py-1.5 px-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-[10px] font-bold transition active:scale-95">
+              <button type="button" data-modal-quick="lunch" class="py-1.5 px-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-[11px] font-bold transition active:scale-95">
                 + Lunch
               </button>
             </div>
 
-            <!-- Custom Dropdown + Duration Adder -->
-            <div class="flex items-center gap-1.5">
-              <div class="relative flex-1">
+            <!-- Dropdown Menu + Duration Input + '+ Add Step' Button -->
+            <div class="flex items-center gap-1.5 min-w-0 w-full">
+              <div class="relative flex-1 min-w-0">
                 <select id="modal-block-mode-select"
-                  class="w-full appearance-none px-2.5 py-1.5 pr-7 rounded-lg bg-zinc-900 border border-white/15 text-[11px] font-medium text-white focus:outline-none focus:ring-1 focus:ring-rose-500">
-                  <option value="focus">Focus (Work)</option>
+                  class="safe-input appearance-none px-2.5 py-2 pr-7 rounded-xl text-xs font-medium">
+                  <option value="focus">Focus</option>
                   <option value="short">Short Rest</option>
                   <option value="long">Long Rest</option>
                   <option value="lunch">Lunch Break</option>
                 </select>
-                <svg class="w-3.5 h-3.5 text-zinc-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="w-3.5 h-3.5 text-zinc-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
               <input id="modal-block-dur-input" type="number" min="1" max="180" value="25"
-                class="w-14 px-2 py-1.5 rounded-lg bg-zinc-900 border border-white/15 text-[11px] font-mono font-bold text-center text-white focus:outline-none focus:ring-1 focus:ring-rose-500"
-                title="Block minutes" />
-              <button type="button" id="modal-add-custom-block-btn" class="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white transition shrink-0">
-                Add
+                class="safe-input !w-14 shrink-0 px-1.5 py-2 rounded-xl font-mono font-bold text-center text-xs"
+                title="Duration in minutes" aria-label="Step duration in minutes" />
+              <button type="button" id="modal-add-custom-block-btn" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-xs font-semibold text-white transition shrink-0 active:scale-95">
+                + Add Step
               </button>
             </div>
 
-            <!-- Live Structure Summary Strip -->
-            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/[0.06] text-[10px]">
-              <div class="flex items-center gap-2">
-                <span class="text-zinc-400"><strong id="modal-sum-blocks" class="text-white font-mono">0</strong> blocks</span>
-                <span class="text-rose-300">Focus <strong id="modal-sum-focus" class="font-mono">0m</strong></span>
-                <span class="text-teal-300">Breaks <strong id="modal-sum-break" class="font-mono">0m</strong></span>
+            <!-- Live Total Hours / Minutes Summary Strip -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-[#111114] border border-[#26262C] text-[11px]">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-zinc-400"><strong id="modal-sum-blocks" class="text-white font-mono">0</strong> steps</span>
+                <span class="text-zinc-600">•</span>
+                <span class="text-zinc-300 font-mono font-semibold" id="modal-sum-total-hours">0.0 hrs</span>
+                <span class="text-zinc-500 font-mono" id="modal-sum-total-mins">(0m)</span>
               </div>
-              <span class="text-zinc-400 font-mono">End ~<strong id="modal-sum-end" class="text-zinc-200">--:--</strong></span>
+              <span class="text-zinc-400 font-mono shrink-0">End ~<strong id="modal-sum-end" class="text-zinc-200">--:--</strong></span>
             </div>
 
-            <!-- Ordered Sequence List inside Modal -->
-            <div id="modal-blocks-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-0.5"></div>
+            <!-- Ordered Sequence Steps List -->
+            <div id="modal-blocks-list" class="space-y-1.5 max-h-48 overflow-y-auto overflow-x-hidden pr-0.5"></div>
           </div>
         </div>
 
-        <button id="save-task-submit-btn" type="submit" class="w-full mt-3.5 py-3.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-heading text-xs uppercase tracking-wider font-bold shadow-lg shadow-rose-500/25 transition active:scale-95 shrink-0">
-          Save Structured Task
+        <button id="save-task-submit-btn" type="submit" class="w-full mt-3.5 py-3.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs uppercase tracking-wider font-bold shadow-lg shadow-rose-500/25 transition active:scale-95 shrink-0">
+          Save Task
         </button>
       </form>
     </div>
@@ -669,9 +665,12 @@
 
   <script>
     /**
-     * FocusFlow Mobile Pomodoro & Unified Task Structure Planner
-     * Includes Screen Wake Lock API + silent audio fallback so the phone
-     * stays awake while Pomodoro sessions play.
+     * FocusFlow Mobile Pomodoro Timer & Task Sequence Planner
+     * Self-contained single-file implementation with:
+     * - Screen Wake Lock API + silent Web Audio keep-alive fallback
+     * - Continuous auto-play across timer modes or full scheduled task sequences
+     * - Interactive Calendar & Unified Work-to-Finish Task Builder
+     * - Floating Apple liquid-glass icon-only pill bar & horizontal touch swipe navigation
      */
     (function () {
       'use strict';
@@ -680,35 +679,28 @@
       // 1. CONSTANTS & THEME CONFIGURATION
       // =========================================================================
       const STORAGE_KEYS = {
-        DURATIONS: 'focusflow_durations_v5',
-        LONG_INTERVAL: 'focusflow_long_interval_v5',
-        AUTO_PLAY: 'focusflow_autoplay_v5',
-        QUEUE_MODE: 'focusflow_queue_mode_v5',
-        TASKS: 'focusflow_structured_tasks_v5',
-        ACTIVE_TASK: 'focusflow_active_task_v5',
-        SESSIONS: 'focusflow_sessions_v5',
-        SOUND: 'focusflow_sound_v5',
+        DURATIONS: 'focusflow_durations_v6',
+        AUTO_PLAY: 'focusflow_autoplay_v6',
+        TASKS: 'focusflow_tasks_v6',
+        ACTIVE_TASK: 'focusflow_active_task_v6',
       };
 
       const DEFAULT_DURATIONS = {
         focus: 25,
         short: 5,
         long: 15,
-        lunch: 45,
+        lunch: 60,
       };
-
-      const DEFAULT_LONG_INTERVAL = 4;
 
       const MODE_CONFIG = {
         focus: {
-          label: 'Focus Session',
+          label: 'Focus',
           shortLabel: 'Focus',
           defaultNote: 'Work block',
-          startText: 'Start Focus',
           ringColor: '#F43F5E',
           badgeBg: 'bg-rose-500',
           glowBg: 'bg-rose-500/15',
-          pillActive: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
+          pillActive: 'bg-rose-500/20 text-rose-300 border border-rose-500/35',
           badgeTextClass: 'text-rose-400',
           btnClass: 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/25',
           taskBadgeClass: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
@@ -716,13 +708,12 @@
         },
         short: {
           label: 'Short Rest',
-          shortLabel: 'Rest',
-          defaultNote: 'Quick recharge',
-          startText: 'Start Rest',
+          shortLabel: 'Short Rest',
+          defaultNote: 'Quick break',
           ringColor: '#2DD4BF',
           badgeBg: 'bg-teal-500',
           glowBg: 'bg-teal-500/15',
-          pillActive: 'bg-teal-500/20 text-teal-300 border border-teal-500/30',
+          pillActive: 'bg-teal-500/20 text-teal-300 border border-teal-500/35',
           badgeTextClass: 'text-teal-400',
           btnClass: 'bg-teal-500 hover:bg-teal-600 shadow-teal-500/25',
           taskBadgeClass: 'bg-teal-500/20 text-teal-300 border border-teal-500/30',
@@ -731,12 +722,11 @@
         long: {
           label: 'Long Rest',
           shortLabel: 'Long Rest',
-          defaultNote: 'Deep recovery',
-          startText: 'Start Long Rest',
+          defaultNote: 'Deep recharge',
           ringColor: '#818CF8',
           badgeBg: 'bg-indigo-500',
           glowBg: 'bg-indigo-500/15',
-          pillActive: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
+          pillActive: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/35',
           badgeTextClass: 'text-indigo-400',
           btnClass: 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/25',
           taskBadgeClass: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
@@ -744,13 +734,12 @@
         },
         lunch: {
           label: 'Lunch Break',
-          shortLabel: 'Lunch',
-          defaultNote: 'Midday meal',
-          startText: 'Start Lunch',
+          shortLabel: 'Lunch Break',
+          defaultNote: 'Meal break',
           ringColor: '#FBBF24',
           badgeBg: 'bg-amber-500',
           glowBg: 'bg-amber-500/15',
-          pillActive: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+          pillActive: 'bg-amber-500/20 text-amber-300 border border-amber-500/35',
           badgeTextClass: 'text-amber-400',
           btnClass: 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/25',
           taskBadgeClass: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
@@ -761,7 +750,7 @@
       const CIRCUMFERENCE = 2 * Math.PI * 106;
 
       // =========================================================================
-      // 2. DATE, TIME & BLOCK HELPERS
+      // 2. DATE, TIME & STEP HELPERS
       // =========================================================================
       function toLocalDateStr(dateObj) {
         const y = dateObj.getFullYear();
@@ -784,25 +773,17 @@
         return `${String(future.getHours()).padStart(2, '0')}:${String(future.getMinutes()).padStart(2, '0')}`;
       }
 
-      function formatMinutesHuman(totalMins) {
-        if (totalMins < 60) return `${totalMins}m`;
-        const h = Math.floor(totalMins / 60);
-        const m = totalMins % 60;
-        return m > 0 ? `${h}h ${m}m` : `${h}h`;
-      }
-
       function formatTotalHoursLabel(totalMins) {
         const safeMins = Math.max(0, Number(totalMins) || 0);
         const hours = safeMins / 60;
         const formatted = Number.isInteger(hours)
-          ? String(hours)
-          : hours.toFixed(1).replace(/\.0$/, '');
+          ? hours.toFixed(1)
+          : hours.toFixed(1);
         return `${formatted} ${Number(formatted) === 1 ? 'hr' : 'hrs'}`;
       }
 
       function formatReadableDate(dateStr) {
-        const today = getTodayStr();
-        if (dateStr === today) return 'Today';
+        if (dateStr === getTodayStr()) return 'Today';
         const parts = String(dateStr || '').split('-').map(Number);
         if (parts.length !== 3 || parts.some(isNaN)) return dateStr;
         const dt = new Date(parts[0], parts[1] - 1, parts[2]);
@@ -822,7 +803,7 @@
       }
 
       // =========================================================================
-      // 3. SAFE LOCALSTORAGE PERSISTENCE & INITIAL SEED DATA
+      // 3. SAFE LOCALSTORAGE PERSISTENCE & INITIAL STATE
       // =========================================================================
       function loadJSON(key, fallback) {
         try {
@@ -839,13 +820,13 @@
         try {
           localStorage.setItem(key, JSON.stringify(val));
         } catch (e) {
-          // Ignore storage quota errors
+          // Ignore quota errors
         }
       }
 
       function sanitizeBlocks(blocks) {
         if (!Array.isArray(blocks) || blocks.length === 0) {
-          return [createBlock('focus', 25, 'Deep focus')];
+          return [createBlock('focus', 25, '')];
         }
         return blocks
           .filter((b) => b && typeof b === 'object')
@@ -867,8 +848,8 @@
               const blocks = sanitizeBlocks(t.blocks);
               const allDone = blocks.every((b) => b.completed);
               return {
-                id: String(t.id || `stask-${idx}`),
-                title: String(t.title || 'Untitled Structured Task'),
+                id: String(t.id || `task-${idx}`),
+                title: String(t.title || 'Untitled Task'),
                 date: String(t.date || getTodayStr()),
                 reminderEnabled: Boolean(t.reminderEnabled),
                 reminderTime: String(t.reminderTime || '09:00'),
@@ -878,43 +859,7 @@
               };
             });
         }
-
-        const today = getTodayStr();
-        const sampleTasks = [
-          {
-            id: 'stask-sample-1',
-            title: 'Product Architecture & UI Sprint',
-            date: today,
-            reminderEnabled: false,
-            reminderTime: getFutureHHMM(20),
-            reminded: false,
-            completed: false,
-            blocks: [
-              createBlock('focus', 25, 'API schema & data flow'),
-              createBlock('short', 5, 'Stretch & hydrate'),
-              createBlock('focus', 25, 'Component UI build'),
-              createBlock('lunch', 45, 'Lunch & walk outside'),
-              createBlock('focus', 25, 'End-to-end polish'),
-              createBlock('long', 15, 'Wrap-up & notes'),
-            ],
-          },
-          {
-            id: 'stask-sample-2',
-            title: 'Code Review & Documentation',
-            date: today,
-            reminderEnabled: true,
-            reminderTime: '16:00',
-            reminded: false,
-            completed: false,
-            blocks: [
-              createBlock('focus', 25, 'PR reviews'),
-              createBlock('short', 5, 'Coffee break'),
-              createBlock('focus', 25, 'Release notes'),
-            ],
-          },
-        ];
-        saveJSON(STORAGE_KEYS.TASKS, sampleTasks);
-        return sampleTasks;
+        return [];
       }
 
       const rawDurations = loadJSON(STORAGE_KEYS.DURATIONS, {});
@@ -925,22 +870,15 @@
           long: Math.max(1, Math.min(90, Number(rawDurations.long) || DEFAULT_DURATIONS.long)),
           lunch: Math.max(5, Math.min(180, Number(rawDurations.lunch) || DEFAULT_DURATIONS.lunch)),
         },
-        longRestInterval: Math.max(2, Math.min(10, Number(loadJSON(STORAGE_KEYS.LONG_INTERVAL, DEFAULT_LONG_INTERVAL)) || DEFAULT_LONG_INTERVAL)),
         autoPlay: Boolean(loadJSON(STORAGE_KEYS.AUTO_PLAY, true)),
-        useTaskStructure: Boolean(loadJSON(STORAGE_KEYS.QUEUE_MODE, true)),
         mode: 'focus',
-        secondsLeft: 25 * 60,
-        totalSeconds: 25 * 60,
+        secondsLeft: (Number(rawDurations.focus) || DEFAULT_DURATIONS.focus) * 60,
+        totalSeconds: (Number(rawDurations.focus) || DEFAULT_DURATIONS.focus) * 60,
         isRunning: false,
         timerInterval: null,
-        soundEnabled: Boolean(loadJSON(STORAGE_KEYS.SOUND, true)),
-        sessionsToday: (() => {
-          const saved = loadJSON(STORAGE_KEYS.SESSIONS, { date: getTodayStr(), count: 0 });
-          return saved && saved.date === getTodayStr() ? Math.max(0, Number(saved.count) || 0) : 0;
-        })(),
         cycleFocusCount: 0,
         tasks: getInitialTasks(),
-        activeTaskId: loadJSON(STORAGE_KEYS.ACTIVE_TASK, 'stask-sample-1'),
+        activeTaskId: loadJSON(STORAGE_KEYS.ACTIVE_TASK, null),
         activeBlockId: null,
         selectedDate: getTodayStr(),
         calendarMonth: new Date().getMonth(),
@@ -953,11 +891,28 @@
       };
 
       // =========================================================================
-      // 4. SCREEN WAKE LOCK API + SILENT FALLBACK (KEEP PHONE AWAKE)
+      // 4. SCREEN WAKE LOCK API + SILENT WEB AUDIO KEEP-ALIVE FALLBACK
       // =========================================================================
       let wakeLockSentinel = null;
+      let audioCtx = null;
       let keepAliveOsc = null;
       let keepAliveGain = null;
+
+      function ensureAudioContext() {
+        try {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+              audioCtx = new AudioContextClass();
+            }
+          }
+          if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(() => {});
+          }
+        } catch (err) {
+          audioCtx = null;
+        }
+      }
 
       function updateWakeLockUI(isAwake) {
         const pill = document.getElementById('wakelock-pill');
@@ -1055,28 +1010,9 @@
       });
 
       // =========================================================================
-      // 5. WEB AUDIO CHIME & SYSTEM NOTIFICATION HELPERS
+      // 5. WEB AUDIO CHIME & SYSTEM NOTIFICATIONS
       // =========================================================================
-      let audioCtx = null;
-
-      function ensureAudioContext() {
-        try {
-          if (!audioCtx) {
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (AudioContextClass) {
-              audioCtx = new AudioContextClass();
-            }
-          }
-          if (audioCtx && audioCtx.state === 'suspended') {
-            audioCtx.resume().catch(() => {});
-          }
-        } catch (err) {
-          audioCtx = null;
-        }
-      }
-
       function playChime(type = 'transition') {
-        if (!state.soundEnabled) return;
         try {
           ensureAudioContext();
           if (!audioCtx || audioCtx.state !== 'running') return;
@@ -1120,22 +1056,22 @@
         }
       }
 
-      function updateNotificationBadgeUI() {
+      function updateNotificationIconUI() {
         const btn = document.getElementById('notif-toggle-btn');
         if (!btn) return;
         if (!('Notification' in window)) {
-          btn.className = 'p-2 rounded-xl border border-amber-500/25 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition active:scale-95';
-          btn.title = 'Tap for iOS notification instructions';
+          btn.className = 'p-2 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition active:scale-95';
+          btn.title = 'Add to Home Screen on iOS to enable notifications';
           return;
         }
         if (Notification.permission === 'granted') {
           btn.className = 'p-2 rounded-xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition active:scale-95';
-          btn.title = 'System notifications enabled';
+          btn.title = 'System notifications granted';
         } else if (Notification.permission === 'denied') {
           btn.className = 'p-2 rounded-xl border border-rose-500/30 bg-rose-500/15 text-rose-400 hover:bg-rose-500/25 transition active:scale-95';
-          btn.title = 'Notifications blocked in browser settings';
+          btn.title = 'Notifications denied in browser settings';
         } else {
-          btn.className = 'p-2 rounded-xl border border-amber-500/25 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition active:scale-95';
+          btn.className = 'p-2 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition active:scale-95';
           btn.title = 'Tap to enable system notifications';
         }
       }
@@ -1146,46 +1082,46 @@
           return;
         }
         if (Notification.permission === 'granted') {
-          sendSystemNotification('FocusFlow Active', 'System timer and task alerts are enabled.');
-          showTransitionToast('focus', 'System notifications are already enabled');
+          sendSystemNotification('FocusFlow Active', 'System timer and task notifications are enabled.');
+          showTransitionToast('focus', 'System notifications enabled');
           return;
         }
         try {
           const perm = await Notification.requestPermission();
-          updateNotificationBadgeUI();
+          updateNotificationIconUI();
           if (perm === 'granted') {
-            sendSystemNotification('FocusFlow Ready', 'You will receive alerts as each block completes.');
-            showTransitionToast('focus', 'System notifications enabled!');
+            sendSystemNotification('FocusFlow Ready', 'Alerts will notify you when each session ends.');
+            showTransitionToast('focus', 'System notifications granted!');
           } else {
             showTransitionToast('lunch', 'Notifications blocked in browser settings');
           }
         } catch (e) {
-          showTransitionToast('lunch', 'Unable to request notification permission');
+          showTransitionToast('lunch', 'Unable to request notifications');
         }
       }
 
       // =========================================================================
-      // 6. DOM REFERENCES
+      // 6. DOM REFERENCES & UTILITIES
       // =========================================================================
       const dom = {
         ambientGlow: document.getElementById('ambient-glow'),
         headerDateLabel: document.getElementById('header-date-label'),
         brandBadge: document.getElementById('brand-badge'),
-        sessionCountLabel: document.getElementById('session-count-label'),
         notifToggleBtn: document.getElementById('notif-toggle-btn'),
-        soundToggleBtn: document.getElementById('sound-toggle-btn'),
-        iconSoundOn: document.getElementById('icon-sound-on'),
-        iconSoundOff: document.getElementById('icon-sound-off'),
+        openSettingsBtn: document.getElementById('open-settings-btn'),
 
         transitionToast: document.getElementById('transition-toast'),
         toastDot: document.getElementById('toast-dot'),
         toastMessage: document.getElementById('toast-message'),
 
-        viewTimer: document.getElementById('view-timer'),
-        modeBtns: document.querySelectorAll('.mode-btn'),
+        pageTimer: document.getElementById('page-timer'),
         autoplayToggleBtn: document.getElementById('autoplay-toggle-btn'),
         autoplayIndicatorDot: document.getElementById('autoplay-indicator-dot'),
         autoplayStatusText: document.getElementById('autoplay-status-text'),
+        activeTaskBadge: document.getElementById('active-task-badge'),
+        activeTaskBadgeTitle: document.getElementById('active-task-badge-title'),
+        clearActiveTaskBtn: document.getElementById('clear-active-task-btn'),
+
         progressRing: document.getElementById('progress-ring'),
         modeBadgeText: document.getElementById('mode-badge-text'),
         timerDisplay: document.getElementById('timer-display'),
@@ -1193,20 +1129,12 @@
         stepMinusBtn: document.getElementById('step-minus-btn'),
         stepPlusBtn: document.getElementById('step-plus-btn'),
         startPauseBtn: document.getElementById('start-pause-btn'),
-        startPauseText: document.getElementById('start-pause-text'),
         playIcon: document.getElementById('play-icon'),
         pauseIcon: document.getElementById('pause-icon'),
         resetBtn: document.getElementById('reset-btn'),
+        modeBtns: document.querySelectorAll('.mode-btn'),
 
-        switchToPlannerBtn: document.getElementById('switch-to-planner-btn'),
-        completeActiveTaskBtn: document.getElementById('complete-active-task-btn'),
-        editActiveTaskBtn: document.getElementById('edit-active-task-btn'),
-        activeTaskTitle: document.getElementById('active-task-title'),
-        activeTaskMeta: document.getElementById('active-task-meta'),
-        activeTaskModeBadge: document.getElementById('active-task-mode-badge'),
-        activeTaskBlockNote: document.getElementById('active-task-block-note'),
-
-        viewPlanner: document.getElementById('view-planner'),
+        pageSchedule: document.getElementById('page-schedule'),
         calendarMonthYear: document.getElementById('calendar-month-year'),
         calendarDaysGrid: document.getElementById('calendar-days-grid'),
         calTodayBtn: document.getElementById('cal-today-btn'),
@@ -1221,15 +1149,11 @@
         navTaskBadge: document.getElementById('nav-task-badge'),
 
         settingsModal: document.getElementById('settings-modal'),
-        openSettingsBtn: document.getElementById('open-settings-btn'),
         closeSettingsBtn: document.getElementById('close-settings-btn'),
         inputDurFocus: document.getElementById('input-dur-focus'),
         inputDurShort: document.getElementById('input-dur-short'),
         inputDurLong: document.getElementById('input-dur-long'),
         inputDurLunch: document.getElementById('input-dur-lunch'),
-        inputLongInterval: document.getElementById('input-long-interval'),
-        intervalMinusBtn: document.getElementById('interval-minus-btn'),
-        intervalPlusBtn: document.getElementById('interval-plus-btn'),
         resetDefaultsBtn: document.getElementById('reset-defaults-btn'),
         saveSettingsBtn: document.getElementById('save-settings-btn'),
 
@@ -1249,8 +1173,8 @@
         modalBlockDurInput: document.getElementById('modal-block-dur-input'),
         modalAddCustomBlockBtn: document.getElementById('modal-add-custom-block-btn'),
         modalSumBlocks: document.getElementById('modal-sum-blocks'),
-        modalSumFocus: document.getElementById('modal-sum-focus'),
-        modalSumBreak: document.getElementById('modal-sum-break'),
+        modalSumTotalHours: document.getElementById('modal-sum-total-hours'),
+        modalSumTotalMins: document.getElementById('modal-sum-total-mins'),
         modalSumEnd: document.getElementById('modal-sum-end'),
         modalBlocksList: document.getElementById('modal-blocks-list'),
         saveTaskSubmitBtn: document.getElementById('save-task-submit-btn'),
@@ -1275,25 +1199,23 @@
       }
 
       // =========================================================================
-      // 7. ACTIVE STRUCTURED TASK & SEQUENCE RESOLUTION
+      // 7. ACTIVE STRUCTURED TASK SEQUENCE RESOLUTION
       // =========================================================================
       function getActiveStructuredTaskState() {
-        if (!state.useTaskStructure) {
-          return { active: false, task: null, blocks: [], currentIndex: -1, currentBlock: null, nextBlock: null };
+        if (!state.activeTaskId) {
+          return { active: false, task: null, currentBlock: null, nextBlock: null };
         }
-
         const task = state.tasks.find((t) => t && t.id === state.activeTaskId && !t.completed);
         if (!task || !Array.isArray(task.blocks) || task.blocks.length === 0) {
-          return { active: false, task: null, blocks: [], currentIndex: -1, currentBlock: null, nextBlock: null };
+          return { active: false, task: null, currentBlock: null, nextBlock: null };
         }
 
         let currentIdx = task.blocks.findIndex((b) => b.id === state.activeBlockId && !b.completed);
         if (currentIdx === -1) {
           currentIdx = task.blocks.findIndex((b) => !b.completed);
         }
-
         if (currentIdx === -1) {
-          return { active: false, task, blocks: task.blocks, currentIndex: -1, currentBlock: null, nextBlock: null };
+          return { active: false, task, currentBlock: null, nextBlock: null };
         }
 
         const currentBlock = task.blocks[currentIdx];
@@ -1308,33 +1230,46 @@
         return {
           active: true,
           task,
-          blocks: task.blocks,
-          currentIndex: currentIdx,
           currentBlock,
           nextBlock,
         };
       }
 
-      function syncTimerToActiveTaskIfIdle() {
-        const info = getActiveStructuredTaskState();
-        if (info.active && info.currentBlock) {
-          state.activeBlockId = info.currentBlock.id;
-          state.mode = info.currentBlock.mode;
-          state.totalSeconds = info.currentBlock.duration * 60;
-          state.secondsLeft = state.totalSeconds;
-        }
-      }
-
       function getNextDefaultModeInCycle() {
         if (state.mode === 'focus') {
           const nextCount = state.cycleFocusCount + 1;
-          return nextCount >= state.longRestInterval ? 'long' : 'short';
+          return nextCount >= 4 ? 'long' : 'short';
         }
         return 'focus';
       }
 
+      function renderActiveTaskBadgeAndNavCounter() {
+        const tInfo = getActiveStructuredTaskState();
+        if (dom.activeTaskBadge && dom.activeTaskBadgeTitle) {
+          if (tInfo.active && tInfo.task) {
+            dom.activeTaskBadgeTitle.textContent = tInfo.task.title;
+            dom.activeTaskBadge.classList.remove('hidden');
+          } else {
+            dom.activeTaskBadge.classList.add('hidden');
+          }
+        }
+
+        const selectedPending = state.tasks.filter((t) => t.date === state.selectedDate && !t.completed).length;
+        const todayPending = state.tasks.filter((t) => t.date === getTodayStr() && !t.completed).length;
+        const count = selectedPending > 0 ? selectedPending : todayPending;
+
+        if (dom.navTaskBadge) {
+          if (count > 0) {
+            dom.navTaskBadge.textContent = String(count);
+            dom.navTaskBadge.classList.remove('hidden');
+          } else {
+            dom.navTaskBadge.classList.add('hidden');
+          }
+        }
+      }
+
       // =========================================================================
-      // 8. TIMER ENGINE & AUTO-ADVANCE THROUGH TASK STRUCTURE
+      // 8. TIMER ENGINE & CONTINUOUS AUTO-PLAY
       // =========================================================================
       function showTransitionToast(modeKey, customLabel = null) {
         if (!dom.transitionToast || !dom.toastDot || !dom.toastMessage) return;
@@ -1357,7 +1292,7 @@
           setTimeout(() => {
             if (dom.transitionToast) dom.transitionToast.classList.add('hidden');
           }, 280);
-        }, 3200);
+        }, 3000);
       }
 
       function formatSeconds(sec) {
@@ -1367,10 +1302,10 @@
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
       }
 
-      function renderCycleStatus() {
+      function renderAutoPlayUI() {
         if (dom.autoplayIndicatorDot && dom.autoplayStatusText) {
           if (state.autoPlay) {
-            dom.autoplayIndicatorDot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all';
+            dom.autoplayIndicatorDot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.85)] transition-all';
             dom.autoplayStatusText.innerHTML = 'Auto-Play: <strong class="text-emerald-400 font-semibold">ON</strong>';
           } else {
             dom.autoplayIndicatorDot.className = 'w-2 h-2 rounded-full bg-zinc-600 transition-all';
@@ -1395,25 +1330,26 @@
 
         if (dom.modeBadgeText) {
           dom.modeBadgeText.textContent = cfg.label;
-          dom.modeBadgeText.className = `font-heading text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mb-1 ${cfg.badgeTextClass}`;
+          dom.modeBadgeText.className = `text-[11px] font-bold uppercase tracking-widest mb-1 ${cfg.badgeTextClass}`;
         }
+
         if (dom.durationPillLabel) {
           dom.durationPillLabel.textContent = `${Math.max(1, Math.round(state.totalSeconds / 60))} min`;
         }
 
         if (dom.brandBadge) {
-          dom.brandBadge.className = `w-8 h-8 rounded-xl ${cfg.badgeBg} text-white flex items-center justify-center shadow-lg transition-colors duration-300`;
+          dom.brandBadge.className = `w-8 h-8 rounded-xl ${cfg.badgeBg} text-white flex items-center justify-center shadow-lg transition-colors duration-300 shrink-0`;
         }
+
         if (dom.ambientGlow) {
           dom.ambientGlow.className = `pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-48 rounded-full ${cfg.glowBg} blur-3xl transition-colors duration-500`;
         }
 
         if (dom.startPauseBtn) {
-          dom.startPauseBtn.className = `w-11 h-11 rounded-full ${cfg.btnClass} text-white shadow-lg flex items-center justify-center transition-all active:scale-90`;
+          dom.startPauseBtn.className = `w-12 h-12 rounded-full ${cfg.btnClass} text-white shadow-lg flex items-center justify-center transition-all active:scale-90`;
         }
 
         if (state.isRunning) {
-          if (dom.startPauseText) dom.startPauseText.textContent = 'Pause';
           if (dom.startPauseBtn) {
             dom.startPauseBtn.setAttribute('aria-label', 'Pause timer');
             dom.startPauseBtn.setAttribute('title', 'Pause');
@@ -1421,10 +1357,7 @@
           if (dom.playIcon) dom.playIcon.classList.add('hidden');
           if (dom.pauseIcon) dom.pauseIcon.classList.remove('hidden');
         } else {
-          const actionLabel = state.secondsLeft < state.totalSeconds ? 'Resume' : cfg.startText;
-          if (dom.startPauseText) {
-            dom.startPauseText.textContent = actionLabel;
-          }
+          const actionLabel = state.secondsLeft < state.totalSeconds ? 'Resume timer' : `Start ${cfg.label}`;
           if (dom.startPauseBtn) {
             dom.startPauseBtn.setAttribute('aria-label', actionLabel);
             dom.startPauseBtn.setAttribute('title', actionLabel);
@@ -1438,14 +1371,14 @@
           const mCfg = MODE_CONFIG[m];
           if (!mCfg) return;
           if (m === state.mode) {
-            btn.className = `mode-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 ${mCfg.pillActive}`;
+            btn.className = `mode-btn py-3 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 ${mCfg.pillActive}`;
           } else {
-            btn.className = 'mode-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 text-zinc-400 hover:text-zinc-200';
+            btn.className = 'mode-btn py-3 px-3 rounded-xl text-xs font-semibold flex items-center justify-center transition-all duration-200 bg-[#18181C]/60 text-zinc-400 hover:text-zinc-200 border border-transparent';
           }
         });
 
-        if (dom.sessionCountLabel) dom.sessionCountLabel.textContent = String(state.sessionsToday);
-        renderCycleStatus();
+        renderAutoPlayUI();
+        renderActiveTaskBadgeAndNavCounter();
       }
 
       function pauseTimer() {
@@ -1489,25 +1422,21 @@
         }
       }
 
-      function advanceToNextSession(wasSkipped = false) {
+      function advanceToNextSession() {
         const finishedMode = state.mode;
         const tInfo = getActiveStructuredTaskState();
 
-        if (!wasSkipped) {
-          if (finishedMode === 'focus') {
-            state.sessionsToday += 1;
-            state.cycleFocusCount += 1;
-            saveJSON(STORAGE_KEYS.SESSIONS, { date: getTodayStr(), count: state.sessionsToday });
-            playChime('break');
-          } else {
-            if (finishedMode === 'long') {
-              state.cycleFocusCount = 0;
-            }
-            playChime('transition');
+        if (finishedMode === 'focus') {
+          state.cycleFocusCount += 1;
+          playChime('break');
+        } else {
+          if (finishedMode === 'long') {
+            state.cycleFocusCount = 0;
           }
+          playChime('transition');
         }
 
-        // 1. If playing through a Unified Structured Task
+        // 1. If playing through a Scheduled Task Sequence
         if (tInfo.active && tInfo.task && tInfo.currentBlock) {
           tInfo.currentBlock.completed = true;
 
@@ -1517,51 +1446,44 @@
 
             const nextBlk = tInfo.nextBlock;
             const nCfg = MODE_CONFIG[nextBlk.mode] || MODE_CONFIG.focus;
-            const shouldPlay = wasSkipped ? state.isRunning : state.autoPlay;
-            const stepNum = tInfo.task.blocks.findIndex((b) => b.id === nextBlk.id) + 1;
-            const labelText = `Step ${stepNum}/${tInfo.task.blocks.length}: ${nCfg.shortLabel} (${nextBlk.duration}m)`;
+            const labelText = `${nCfg.label} (${nextBlk.duration}m)`;
 
-            renderActiveTaskCard();
             renderCalendar();
             renderTasksForSelectedDate();
+            sendSystemNotification(tInfo.task.title, `Up next: ${labelText}`);
 
-            if (!wasSkipped) {
-              sendSystemNotification(`${tInfo.task.title}`, `Up next: ${labelText}`);
+            if (state.autoPlay) {
+              switchMode(nextBlk.mode, nextBlk.duration, true, labelText);
+            } else {
+              pauseTimer();
+              switchMode(nextBlk.mode, nextBlk.duration, false);
             }
-
-            switchMode(nextBlk.mode, nextBlk.duration, shouldPlay, labelText);
-            if (!shouldPlay) pauseTimer();
             return;
           } else {
-            // Entire Structured Task Finished
+            // Entire Scheduled Task Completed
             tInfo.task.completed = true;
+            state.activeTaskId = null;
             state.activeBlockId = null;
             saveJSON(STORAGE_KEYS.TASKS, state.tasks);
+            saveJSON(STORAGE_KEYS.ACTIVE_TASK, null);
 
             pauseTimer();
             playChime('complete');
-            renderActiveTaskCard();
             renderCalendar();
             renderTasksForSelectedDate();
             updateTimerUI();
 
-            sendSystemNotification('Task Completed!', `Finished all blocks for "${tInfo.task.title}".`);
-            showTransitionToast('focus', `Completed: ${tInfo.task.title}!`);
+            sendSystemNotification('Task Completed', `Finished "${tInfo.task.title}".`);
+            showTransitionToast('focus', `Completed: ${tInfo.task.title}`);
             return;
           }
         }
 
-        // 2. Fallback: Default Loop Mode
+        // 2. Default Continuous Loop Mode
         const nextMode = getNextDefaultModeInCycle();
-        const shouldPlay = wasSkipped ? state.isRunning : state.autoPlay;
-        renderActiveTaskCard();
-        renderTasksForSelectedDate();
+        sendSystemNotification('Session Complete', `Next: ${MODE_CONFIG[nextMode].label}`);
 
-        if (!wasSkipped) {
-          sendSystemNotification('Session Complete', `Starting ${MODE_CONFIG[nextMode].label}`);
-        }
-
-        if (shouldPlay) {
+        if (state.autoPlay) {
           switchMode(nextMode, null, true);
         } else {
           pauseTimer();
@@ -1586,7 +1508,7 @@
             state.secondsLeft -= 1;
             updateTimerUI();
           } else {
-            advanceToNextSession(false);
+            advanceToNextSession();
           }
         }, 1000);
       }
@@ -1601,7 +1523,6 @@
         if (tInfo.active && tInfo.currentBlock && tInfo.currentBlock.mode === state.mode) {
           tInfo.currentBlock.duration = nextMins;
           saveJSON(STORAGE_KEYS.TASKS, state.tasks);
-          renderActiveTaskCard();
           renderTasksForSelectedDate();
         }
 
@@ -1613,139 +1534,73 @@
       }
 
       // =========================================================================
-      // 9. ACTIVE TASK CARD & TASK ACTIONS
+      // 9. SCHEDULED TASK ACTIONS
       // =========================================================================
-      function renderActiveTaskCard() {
-        const tInfo = getActiveStructuredTaskState();
-        const task = state.tasks.find((t) => t.id === state.activeTaskId && !t.completed);
-
-        if (!task) {
-          if (dom.activeTaskTitle) {
-            dom.activeTaskTitle.textContent = 'No active structured task — tap Schedule';
-            dom.activeTaskTitle.classList.add('text-zinc-500');
-            dom.activeTaskTitle.classList.remove('text-zinc-100');
-          }
-          if (dom.activeTaskMeta) dom.activeTaskMeta.classList.add('hidden');
-          if (dom.completeActiveTaskBtn) dom.completeActiveTaskBtn.classList.add('opacity-40', 'pointer-events-none');
-          if (dom.editActiveTaskBtn) dom.editActiveTaskBtn.classList.add('hidden');
-        } else {
-          const blk = tInfo.currentBlock || task.blocks.find((b) => !b.completed) || task.blocks[0];
-          const stepIdx = blk ? task.blocks.findIndex((b) => b.id === blk.id) + 1 : 1;
-          const bMode = blk ? blk.mode : 'focus';
-          const mCfg = MODE_CONFIG[bMode] || MODE_CONFIG.focus;
-
-          if (dom.activeTaskTitle) {
-            dom.activeTaskTitle.textContent = task.title;
-            dom.activeTaskTitle.classList.remove('text-zinc-500');
-            dom.activeTaskTitle.classList.add('text-zinc-100');
-          }
-          if (dom.activeTaskModeBadge) {
-            dom.activeTaskModeBadge.textContent = `Step ${stepIdx}/${task.blocks.length}: ${mCfg.shortLabel} ${blk ? blk.duration : 25}m`;
-            dom.activeTaskModeBadge.className = `text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0 ${mCfg.taskBadgeClass}`;
-          }
-          if (dom.activeTaskBlockNote) {
-            dom.activeTaskBlockNote.textContent = blk && blk.note ? blk.note : '';
-          }
-          if (dom.activeTaskMeta) dom.activeTaskMeta.classList.remove('hidden');
-          if (dom.completeActiveTaskBtn) dom.completeActiveTaskBtn.classList.remove('opacity-40', 'pointer-events-none');
-          if (dom.editActiveTaskBtn) dom.editActiveTaskBtn.classList.remove('hidden');
-        }
-
-        const todayPending = state.tasks.filter((t) => t.date === getTodayStr() && !t.completed).length;
-        const selectedDatePending = state.tasks.filter((t) => t.date === state.selectedDate && !t.completed).length;
-        const badgeCount = selectedDatePending > 0 ? selectedDatePending : todayPending;
-        if (dom.navTaskBadge) {
-          if (badgeCount > 0) {
-            dom.navTaskBadge.textContent = String(badgeCount);
-            dom.navTaskBadge.classList.remove('hidden');
-          } else {
-            dom.navTaskBadge.classList.add('hidden');
-          }
-        }
-      }
-
       function toggleTaskComplete(taskId) {
         const task = state.tasks.find((t) => t.id === taskId);
         if (!task) return;
         task.completed = !task.completed;
-        if (task.completed) {
-          task.blocks.forEach((b) => (b.completed = true));
-        } else {
-          task.blocks.forEach((b) => (b.completed = false));
-        }
+        task.blocks.forEach((b) => (b.completed = task.completed));
         saveJSON(STORAGE_KEYS.TASKS, state.tasks);
 
         if (task.completed && state.activeTaskId === taskId) {
           pauseTimer();
-          const nextTask = state.tasks.find((t) => t.date === task.date && !t.completed);
-          state.activeTaskId = nextTask ? nextTask.id : null;
+          state.activeTaskId = null;
           state.activeBlockId = null;
-          saveJSON(STORAGE_KEYS.ACTIVE_TASK, state.activeTaskId);
-          syncTimerToActiveTaskIfIdle();
+          saveJSON(STORAGE_KEYS.ACTIVE_TASK, null);
         }
 
-        renderActiveTaskCard();
+        renderActiveTaskBadgeAndNavCounter();
         renderCalendar();
         renderTasksForSelectedDate();
         updateTimerUI();
       }
 
       function deleteTask(taskId) {
-        const target = state.tasks.find((t) => t.id === taskId);
-        const dateStr = target ? target.date : state.selectedDate;
         state.tasks = state.tasks.filter((t) => t.id !== taskId);
         saveJSON(STORAGE_KEYS.TASKS, state.tasks);
 
         if (state.activeTaskId === taskId) {
           pauseTimer();
-          const remaining = state.tasks.find((t) => t.date === dateStr && !t.completed);
-          state.activeTaskId = remaining ? remaining.id : null;
+          state.activeTaskId = null;
           state.activeBlockId = null;
-          saveJSON(STORAGE_KEYS.ACTIVE_TASK, state.activeTaskId);
-          syncTimerToActiveTaskIfIdle();
+          saveJSON(STORAGE_KEYS.ACTIVE_TASK, null);
         }
 
-        renderActiveTaskCard();
+        renderActiveTaskBadgeAndNavCounter();
         renderCalendar();
         renderTasksForSelectedDate();
         updateTimerUI();
       }
 
-      function runStructuredTask(taskId, restartFromBeginning = false) {
+      function runStructuredTask(taskId) {
         const task = state.tasks.find((t) => t.id === taskId);
         if (!task || !Array.isArray(task.blocks) || task.blocks.length === 0) return;
 
-        if (restartFromBeginning || task.completed) {
-          task.completed = false;
-          task.blocks.forEach((b) => (b.completed = false));
-        }
+        // Reset completion so full sequence plays from start to finish
+        task.completed = false;
+        task.blocks.forEach((b) => (b.completed = false));
 
-        const firstOpenBlock = task.blocks.find((b) => !b.completed) || task.blocks[0];
+        const firstBlock = task.blocks[0];
         state.activeTaskId = task.id;
-        state.activeBlockId = firstOpenBlock.id;
-        state.useTaskStructure = true;
+        state.activeBlockId = firstBlock.id;
 
         saveJSON(STORAGE_KEYS.TASKS, state.tasks);
         saveJSON(STORAGE_KEYS.ACTIVE_TASK, task.id);
-        saveJSON(STORAGE_KEYS.QUEUE_MODE, true);
 
-        const stepNum = task.blocks.findIndex((b) => b.id === firstOpenBlock.id) + 1;
-        const mCfg = MODE_CONFIG[firstOpenBlock.mode] || MODE_CONFIG.focus;
+        const mCfg = MODE_CONFIG[firstBlock.mode] || MODE_CONFIG.focus;
 
         pauseTimer();
-        switchMode(firstOpenBlock.mode, firstOpenBlock.duration, false);
-        renderActiveTaskCard();
+        switchMode(firstBlock.mode, firstBlock.duration, false);
+        renderActiveTaskBadgeAndNavCounter();
         renderTasksForSelectedDate();
         switchTab('timer');
         startTimer();
-        showTransitionToast(
-          firstOpenBlock.mode,
-          `${task.title} • Step ${stepNum}/${task.blocks.length}: ${mCfg.shortLabel} (${firstOpenBlock.duration}m)`
-        );
+        showTransitionToast(firstBlock.mode, `${task.title} • ${mCfg.label} (${firstBlock.duration}m)`);
       }
 
       // =========================================================================
-      // 10. CALENDAR & UNIFIED STRUCTURED TASK CARDS RENDERING
+      // 10. CALENDAR & MINIMALIST SCHEDULED TASK CARDS
       // =========================================================================
       function renderCalendar() {
         if (!dom.calendarMonthYear || !dom.calendarDaysGrid) return;
@@ -1787,9 +1642,9 @@
           if (isSelected) {
             btnClasses += 'bg-rose-500 text-white shadow-md shadow-rose-500/30';
           } else if (isToday) {
-            btnClasses += 'bg-white/10 text-rose-300 border border-rose-500/40';
+            btnClasses += 'bg-[#18181C] text-rose-300 border border-rose-500/40';
           } else {
-            btnClasses += 'text-zinc-300 hover:bg-white/10';
+            btnClasses += 'text-zinc-300 hover:bg-[#18181C]';
           }
 
           let dotHtml = '';
@@ -1819,7 +1674,7 @@
             state.selectedDate = btn.dataset.calDate;
             renderCalendar();
             renderTasksForSelectedDate();
-            renderActiveTaskCard();
+            renderActiveTaskBadgeAndNavCounter();
           });
         });
       }
@@ -1837,9 +1692,9 @@
 
         if (dayTasks.length === 0) {
           dom.taskListContainer.innerHTML = `
-            <div class="bg-white/[0.02] border border-dashed border-white/15 rounded-2xl p-6 text-center my-auto">
-              <p class="text-sm font-medium text-zinc-300">No structured tasks for ${escapeHTML(readable)}</p>
-              <p class="text-xs text-zinc-500 mt-1">Tap <strong class="text-rose-400">+ New Task</strong> to build a complete Work → Rest → Lunch → Finish sequence inside one task.</p>
+            <div class="bg-[#111114]/60 border border-dashed border-[#26262C] rounded-2xl p-6 text-center my-auto">
+              <p class="text-sm font-medium text-zinc-300">No tasks scheduled for ${escapeHTML(readable)}</p>
+              <p class="text-xs text-zinc-500 mt-1">Tap <strong class="text-rose-400">+ New Task</strong> to organize a complete Pomodoro sequence.</p>
             </div>
           `;
           return;
@@ -1852,9 +1707,9 @@
             const totalHoursText = formatTotalHoursLabel(totalMins);
 
             return `
-              <div class="bg-white/[0.04] backdrop-blur-md rounded-2xl p-3.5 border ${isActiveTask ? 'border-rose-500/45 bg-rose-500/[0.06]' : 'border-white/10'} transition">
+              <div class="bg-[#111114] rounded-2xl p-3.5 border ${isActiveTask ? 'border-rose-500/45 bg-rose-500/[0.05]' : 'border-[#26262C]'} transition">
                 <div class="flex items-center justify-between gap-2.5">
-                  <!-- Left: Completion Toggle + Title & Total Hours -->
+                  <!-- Left: Completion Checkbox + Title & Total Hours + Optional Reminder Badge -->
                   <div class="flex items-center gap-3 min-w-0 flex-1">
                     <button type="button" data-action="toggle-task" data-id="${escapeHTML(task.id)}"
                       class="w-5 h-5 rounded-full border-2 ${task.completed ? 'bg-teal-500 border-teal-500 text-zinc-950' : 'border-zinc-600 hover:border-rose-400 text-transparent'} flex items-center justify-center shrink-0 transition active:scale-90"
@@ -1865,50 +1720,45 @@
                     </button>
 
                     <div class="min-w-0 flex-1">
-                      <p class="text-[13px] sm:text-sm font-semibold ${task.completed ? 'line-through text-zinc-500' : 'text-white'} truncate leading-snug">
+                      <p class="text-sm font-semibold ${task.completed ? 'line-through text-zinc-500' : 'text-white'} truncate leading-snug">
                         ${escapeHTML(task.title)}
                       </p>
-                      <div class="flex items-center gap-2 mt-1 text-[11px] text-zinc-400">
+                      <div class="flex items-center gap-2 mt-1 text-xs text-zinc-400">
                         <span class="font-mono font-semibold text-zinc-300">${escapeHTML(totalHoursText)}</span>
                         ${
                           task.reminderEnabled && task.reminderTime
-                            ? `<span class="text-zinc-600">•</span><span class="font-mono text-amber-300/90">${escapeHTML(task.reminderTime)}</span>`
+                            ? `<span class="px-1.5 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/25 font-mono text-[10px] font-semibold text-amber-300">${escapeHTML(task.reminderTime)}</span>`
                             : ''
                         }
                       </div>
                     </div>
                   </div>
 
-                  <!-- Right: Minimalist Icon-Only Play, Edit & Delete Controls -->
+                  <!-- Right: Clean Circular Icon-Only Play, Edit & Delete Buttons -->
                   <div class="flex items-center gap-1.5 shrink-0">
                     <button type="button" data-action="run-task" data-id="${escapeHTML(task.id)}"
-                      class="w-8 h-8 rounded-full ${
-                        task.completed
-                          ? 'bg-white/[0.06] hover:bg-white/15 text-zinc-300 border border-white/10'
-                          : 'bg-rose-500 hover:bg-rose-600 text-white shadow-sm shadow-rose-500/25'
-                      } flex items-center justify-center transition active:scale-90 shrink-0"
-                      title="Run Task" aria-label="Run Task">
+                      class="w-8 h-8 rounded-full bg-rose-500 hover:bg-rose-600 text-white shadow-sm shadow-rose-500/25 flex items-center justify-center transition active:scale-90 shrink-0"
+                      title="Play task sequence" aria-label="Play task sequence">
                       <svg class="w-3.5 h-3.5 fill-current ml-0.5" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </button>
 
-                    <div class="flex items-center bg-white/[0.04] border border-white/10 rounded-xl p-0.5">
-                      <button type="button" data-action="edit-task" data-id="${escapeHTML(task.id)}"
-                        class="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition active:scale-90"
-                        title="Edit task" aria-label="Edit task">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                      <button type="button" data-action="delete-task" data-id="${escapeHTML(task.id)}"
-                        class="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-rose-400 hover:bg-rose-500/15 transition active:scale-90"
-                        title="Delete task" aria-label="Delete task">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
+                    <button type="button" data-action="edit-task" data-id="${escapeHTML(task.id)}"
+                      class="w-8 h-8 rounded-full bg-[#18181C] hover:bg-white/15 border border-[#26262C] text-zinc-300 hover:text-white flex items-center justify-center transition active:scale-90 shrink-0"
+                      title="Edit task" aria-label="Edit task">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+
+                    <button type="button" data-action="delete-task" data-id="${escapeHTML(task.id)}"
+                      class="w-8 h-8 rounded-full bg-[#18181C] hover:bg-rose-500/15 border border-[#26262C] hover:border-rose-500/30 text-zinc-400 hover:text-rose-400 flex items-center justify-center transition active:scale-90 shrink-0"
+                      title="Delete task" aria-label="Delete task">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1922,7 +1772,7 @@
             const id = btn.dataset.id;
             const action = btn.dataset.action;
             if (action === 'toggle-task') toggleTaskComplete(id);
-            if (action === 'run-task') runStructuredTask(id, false);
+            if (action === 'run-task') runStructuredTask(id);
             if (action === 'edit-task') openEditTaskModal(id);
             if (action === 'delete-task') deleteTask(id);
           });
@@ -1930,23 +1780,15 @@
       }
 
       // =========================================================================
-      // 11. MODAL INTERNAL TIMER STRUCTURE BUILDER (DRAG, REORDER, PRESETS)
+      // 11. MODAL WORK-TO-FINISH SEQUENCE BUILDER (PRESETS, DRAG & REORDER)
       // =========================================================================
       function updateModalSequenceSummary() {
         const blocks = state.modalDraftBlocks;
-        let focusMins = 0;
-        let breakMins = 0;
+        const totalMins = blocks.reduce((sum, b) => sum + (Number(b.duration) || 0), 0);
 
-        blocks.forEach((b) => {
-          const d = Number(b.duration) || 0;
-          if (b.mode === 'focus') focusMins += d;
-          else breakMins += d;
-        });
-
-        const totalMins = focusMins + breakMins;
         if (dom.modalSumBlocks) dom.modalSumBlocks.textContent = String(blocks.length);
-        if (dom.modalSumFocus) dom.modalSumFocus.textContent = formatMinutesHuman(focusMins);
-        if (dom.modalSumBreak) dom.modalSumBreak.textContent = formatMinutesHuman(breakMins);
+        if (dom.modalSumTotalHours) dom.modalSumTotalHours.textContent = formatTotalHoursLabel(totalMins);
+        if (dom.modalSumTotalMins) dom.modalSumTotalMins.textContent = `(${totalMins}m)`;
         if (dom.modalSumEnd) dom.modalSumEnd.textContent = totalMins > 0 ? getFutureHHMM(totalMins) : '--:--';
       }
 
@@ -1956,8 +1798,8 @@
 
         if (state.modalDraftBlocks.length === 0) {
           dom.modalBlocksList.innerHTML = `
-            <div class="py-4 px-3 rounded-xl border border-dashed border-white/15 text-center text-[11px] text-zinc-500">
-              No blocks yet. Tap <strong class="text-zinc-300">+ Focus</strong>, <strong class="text-zinc-300">+ Rest</strong>, or <strong class="text-zinc-300">+ Lunch</strong> above.
+            <div class="py-4 px-3 rounded-xl border border-dashed border-[#26262C] text-center text-xs text-zinc-500">
+              No steps yet. Tap a preset (<strong class="text-amber-300">Workday</strong> / <strong class="text-zinc-200">4hr</strong>) or add steps above.
             </div>
           `;
           return;
@@ -1971,8 +1813,8 @@
 
             return `
               <div draggable="true" data-modal-idx="${idx}"
-                class="modal-block-row flex items-center gap-1.5 p-2 rounded-xl bg-zinc-900/90 border border-white/10 transition select-none">
-                <!-- Drag Handle & Step Number -->
+                class="modal-block-row flex items-center gap-1.5 p-2 rounded-xl bg-[#111114] border border-[#26262C] transition select-none min-w-0 w-full">
+                <!-- Drag Handle & Step Index -->
                 <div class="cursor-grab active:cursor-grabbing text-zinc-600 hover:text-zinc-300 flex items-center gap-1 shrink-0" title="Drag to reorder">
                   <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M7 4a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm6-12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
@@ -1980,39 +1822,39 @@
                   <span class="text-[10px] font-mono font-bold text-zinc-500 w-3.5">${idx + 1}</span>
                 </div>
 
-                <!-- Mode Pill -->
+                <!-- Mode Badge -->
                 <span class="text-[10px] font-bold px-2 py-1 rounded-md shrink-0 ${mCfg.taskBadgeClass}">
                   ${mCfg.shortLabel}
                 </span>
 
-                <!-- Optional Note Input -->
+                <!-- Optional Step Note Input -->
                 <input type="text" data-blk-note-idx="${idx}" value="${escapeHTML(blk.note)}"
                   placeholder="${mCfg.defaultNote}"
-                  class="min-w-0 flex-1 bg-transparent border-b border-transparent focus:border-white/25 text-[11px] text-zinc-200 placeholder:text-zinc-600 px-1 py-0.5 focus:outline-none" />
+                  class="min-w-0 flex-1 bg-transparent border-b border-transparent focus:border-white/25 text-xs text-zinc-200 placeholder:text-zinc-600 px-1 py-0.5 focus:outline-none" />
 
-                <!-- Editable Duration (min) -->
+                <!-- Editable Step Duration (min) -->
                 <div class="flex items-center gap-0.5 shrink-0">
                   <input type="number" min="1" max="180" data-blk-dur-idx="${idx}" value="${blk.duration}"
-                    class="w-11 text-center font-mono font-bold text-[11px] py-1 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-1 focus:ring-rose-500" />
+                    class="safe-input !w-12 text-center font-mono font-bold !text-xs py-1 rounded-md" />
                   <span class="text-[10px] text-zinc-500">m</span>
                 </div>
 
-                <!-- Up / Down & Remove Buttons -->
+                <!-- Move Up / Move Down & Delete Step Buttons -->
                 <div class="flex items-center shrink-0">
                   <button type="button" data-blk-move="${idx}:-1" ${isFirst ? 'disabled' : ''}
-                    class="p-1 text-zinc-400 hover:text-white disabled:opacity-20 transition" title="Move Up">
+                    class="p-1 text-zinc-400 hover:text-white disabled:opacity-20 transition" title="Move Up" aria-label="Move Up">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                     </svg>
                   </button>
                   <button type="button" data-blk-move="${idx}:1" ${isLast ? 'disabled' : ''}
-                    class="p-1 text-zinc-400 hover:text-white disabled:opacity-20 transition" title="Move Down">
+                    class="p-1 text-zinc-400 hover:text-white disabled:opacity-20 transition" title="Move Down" aria-label="Move Down">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   <button type="button" data-blk-remove="${idx}"
-                    class="p-1 text-zinc-500 hover:text-rose-400 transition" title="Remove block">
+                    class="p-1 text-zinc-500 hover:text-rose-400 transition" title="Delete step" aria-label="Delete step">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -2023,7 +1865,7 @@
           })
           .join('');
 
-        // Bind note & duration inline edits
+        // Bind inline step note & duration changes
         dom.modalBlocksList.querySelectorAll('[data-blk-note-idx]').forEach((inp) => {
           inp.addEventListener('input', () => {
             const idx = parseInt(inp.dataset.blkNoteIdx, 10);
@@ -2045,7 +1887,7 @@
           });
         });
 
-        // Bind Move Up/Down
+        // Bind Move Up / Move Down
         dom.modalBlocksList.querySelectorAll('[data-blk-move]').forEach((btn) => {
           btn.addEventListener('click', () => {
             const [idxStr, dirStr] = btn.dataset.blkMove.split(':');
@@ -2059,7 +1901,7 @@
           });
         });
 
-        // Bind Remove
+        // Bind Delete step
         dom.modalBlocksList.querySelectorAll('[data-blk-remove]').forEach((btn) => {
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.blkRemove, 10);
@@ -2068,7 +1910,7 @@
           });
         });
 
-        // Bind Drag & Drop inside Modal
+        // Bind Drag-and-Drop reordering
         dom.modalBlocksList.querySelectorAll('.modal-block-row').forEach((row) => {
           row.addEventListener('dragstart', (e) => {
             state.modalDraggedIndex = parseInt(row.dataset.modalIdx, 10);
@@ -2119,8 +1961,9 @@
 
       function applyPresetToDraft(presetKey) {
         if (presetKey === 'workday') {
+          // Full 9-hour (09:00 - 18:00) 25/5 structure: two 4-hour halves + 60m Lunch Break + 10m Long Rest shutdown
           state.modalDraftBlocks = [
-            // Morning 4-Hour Block (09:00 - 13:00)
+            // First 4-Hour Half (240m)
             createBlock('focus', 25, 'Sprint 1'),
             createBlock('short', 5, 'Short rest'),
             createBlock('focus', 25, 'Sprint 2'),
@@ -2137,9 +1980,9 @@
             createBlock('short', 5, 'Short rest'),
             createBlock('focus', 25, 'Sprint 8'),
             createBlock('short', 5, 'Transition to lunch'),
-            // Midday Reset (13:00 - 14:00)
+            // Midday Lunch Break (60m)
             createBlock('lunch', 60, 'Lunch break'),
-            // Afternoon 4-Hour Block (14:00 - 18:00)
+            // Second 4-Hour Half (240m)
             createBlock('focus', 25, 'Sprint 9'),
             createBlock('short', 5, 'Short rest'),
             createBlock('focus', 25, 'Sprint 10'),
@@ -2163,7 +2006,8 @@
           if (dom.taskTimeInput && !dom.taskTimeInput.value) {
             dom.taskTimeInput.value = '09:00';
           }
-        } else if (presetKey === 'fourhr') {
+        } else if (presetKey === '4hr') {
+          // 4-Hour (240m) 25/5 half-day block with mid-session 15m Long Rest
           state.modalDraftBlocks = [
             createBlock('focus', 25, 'Sprint 1'),
             createBlock('short', 5, 'Short rest'),
@@ -2172,7 +2016,7 @@
             createBlock('focus', 25, 'Sprint 3'),
             createBlock('short', 5, 'Short rest'),
             createBlock('focus', 15, 'Sprint 4'),
-            createBlock('long', 15, 'Mid-block recharge'),
+            createBlock('long', 15, 'Mid-session recharge'),
             createBlock('focus', 25, 'Sprint 5'),
             createBlock('short', 5, 'Short rest'),
             createBlock('focus', 25, 'Sprint 6'),
@@ -2190,7 +2034,7 @@
       }
 
       // =========================================================================
-      // 12. REMINDER CHECKER LOOP
+      // 12. SCHEDULED REMINDER CHECKER LOOP
       // =========================================================================
       function checkScheduledReminders() {
         const today = getTodayStr();
@@ -2237,16 +2081,16 @@
       }
 
       // =========================================================================
-      // 13. NAVIGATION & MODAL CONTROLLERS
+      // 13. PAGE NAVIGATION & MODAL CONTROLLERS
       // =========================================================================
       function switchTab(tabName) {
         state.activeTab = tabName;
         if (tabName === 'timer') {
-          if (dom.viewTimer) dom.viewTimer.classList.remove('hidden');
-          if (dom.viewPlanner) dom.viewPlanner.classList.add('hidden');
+          if (dom.pageTimer) dom.pageTimer.classList.remove('hidden');
+          if (dom.pageSchedule) dom.pageSchedule.classList.add('hidden');
         } else {
-          if (dom.viewTimer) dom.viewTimer.classList.add('hidden');
-          if (dom.viewPlanner) dom.viewPlanner.classList.remove('hidden');
+          if (dom.pageTimer) dom.pageTimer.classList.add('hidden');
+          if (dom.pageSchedule) dom.pageSchedule.classList.remove('hidden');
           renderCalendar();
           renderTasksForSelectedDate();
         }
@@ -2265,7 +2109,6 @@
         if (dom.inputDurShort) dom.inputDurShort.value = state.durations.short;
         if (dom.inputDurLong) dom.inputDurLong.value = state.durations.long;
         if (dom.inputDurLunch) dom.inputDurLunch.value = state.durations.lunch;
-        if (dom.inputLongInterval) dom.inputLongInterval.value = state.longRestInterval;
         if (dom.settingsModal) dom.settingsModal.classList.remove('hidden');
       }
 
@@ -2284,40 +2127,36 @@
       }
 
       function openAddTaskModal() {
-        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Plan Structured Task';
-        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Save Structured Task';
+        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'New Scheduled Task';
+        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Save Task';
         if (dom.editingTaskIdInput) dom.editingTaskIdInput.value = '';
         if (dom.taskTitleInput) dom.taskTitleInput.value = '';
         if (dom.taskDateInput) dom.taskDateInput.value = state.selectedDate;
-        if (dom.taskTimeInput) dom.taskTimeInput.value = getFutureHHMM(15);
+        if (dom.taskTimeInput) dom.taskTimeInput.value = '09:00';
         syncReminderToggleUI(false);
 
         if (dom.modalBlockModeSelect) dom.modalBlockModeSelect.value = 'focus';
         if (dom.modalBlockDurInput) dom.modalBlockDurInput.value = state.durations.focus;
 
         state.modalDraftBlocks = [
-          createBlock('focus', state.durations.focus, 'Work block 1'),
-          createBlock('short', state.durations.short, 'Short rest'),
-          createBlock('focus', state.durations.focus, 'Work block 2'),
+          createBlock('focus', state.durations.focus, ''),
+          createBlock('short', state.durations.short, ''),
         ];
         renderModalBlocksList();
 
         if (dom.taskModal) dom.taskModal.classList.remove('hidden');
-        setTimeout(() => {
-          if (dom.taskTitleInput) dom.taskTitleInput.focus();
-        }, 60);
       }
 
       function openEditTaskModal(taskId) {
         const task = state.tasks.find((t) => t.id === taskId);
         if (!task) return;
 
-        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Edit Structured Task';
-        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Update Task & Structure';
+        if (dom.taskModalHeading) dom.taskModalHeading.textContent = 'Edit Scheduled Task';
+        if (dom.saveTaskSubmitBtn) dom.saveTaskSubmitBtn.textContent = 'Update Task';
         if (dom.editingTaskIdInput) dom.editingTaskIdInput.value = task.id;
         if (dom.taskTitleInput) dom.taskTitleInput.value = task.title;
         if (dom.taskDateInput) dom.taskDateInput.value = task.date;
-        if (dom.taskTimeInput) dom.taskTimeInput.value = task.reminderTime || getFutureHHMM(15);
+        if (dom.taskTimeInput) dom.taskTimeInput.value = task.reminderTime || '09:00';
         syncReminderToggleUI(Boolean(task.reminderEnabled));
 
         if (dom.modalBlockModeSelect) dom.modalBlockModeSelect.value = 'focus';
@@ -2340,24 +2179,32 @@
       }
 
       // =========================================================================
-      // 14. EVENT LISTENERS BINDING
+      // 14. EVENT LISTENERS & HORIZONTAL SWIPE GESTURE
       // =========================================================================
       function bindEvents() {
-        // Mode buttons
+        // Mode category buttons below timer circle
         dom.modeBtns.forEach((btn) => {
           btn.addEventListener('click', () => {
             switchMode(btn.dataset.mode, null, false);
           });
         });
 
-        // Auto-play toggle
+        // Auto-Play toggle pill
         on(dom.autoplayToggleBtn, 'click', () => {
           state.autoPlay = !state.autoPlay;
           saveJSON(STORAGE_KEYS.AUTO_PLAY, state.autoPlay);
-          renderCycleStatus();
+          renderAutoPlayUI();
         });
 
-        // Play / Pause & Stop
+        // Detach active task sequence badge
+        on(dom.clearActiveTaskBtn, 'click', () => {
+          state.activeTaskId = null;
+          state.activeBlockId = null;
+          saveJSON(STORAGE_KEYS.ACTIVE_TASK, null);
+          renderActiveTaskBadgeAndNavCounter();
+        });
+
+        // Play/Pause & Stop buttons inside timer ring
         on(dom.startPauseBtn, 'click', () => {
           if (state.isRunning) {
             pauseTimer();
@@ -2368,49 +2215,23 @@
 
         on(dom.resetBtn, 'click', stopAndResetTimer);
 
-        // +/- 1 min duration steppers
+        // Inline '-' / '+' minute steppers inside timer ring
         on(dom.stepMinusBtn, 'click', () => adjustCurrentDuration(-1));
         on(dom.stepPlusBtn, 'click', () => adjustCurrentDuration(1));
 
-        // Active task card buttons
-        on(dom.switchToPlannerBtn, 'click', () => switchTab('planner'));
-
-        on(dom.completeActiveTaskBtn, 'click', () => {
-          if (state.activeTaskId) {
-            toggleTaskComplete(state.activeTaskId);
-          }
-        });
-
-        on(dom.editActiveTaskBtn, 'click', () => {
-          if (state.activeTaskId) {
-            openEditTaskModal(state.activeTaskId);
-          }
-        });
-
-        // Bottom pill navigation
+        // Floating pill bottom navigation bar
         dom.navTabBtns.forEach((btn) => {
           btn.addEventListener('click', () => {
             switchTab(btn.dataset.tab);
           });
         });
 
-        // Header buttons
+        // Header Notification Bell & Duration Settings buttons
         on(dom.notifToggleBtn, 'click', requestSystemNotifications);
-
-        on(dom.soundToggleBtn, 'click', () => {
-          state.soundEnabled = !state.soundEnabled;
-          saveJSON(STORAGE_KEYS.SOUND, state.soundEnabled);
-          if (dom.iconSoundOn && dom.iconSoundOff) {
-            dom.iconSoundOn.classList.toggle('hidden', !state.soundEnabled);
-            dom.iconSoundOff.classList.toggle('hidden', state.soundEnabled);
-          }
-          if (state.soundEnabled) playChime('transition');
-        });
-
-        // Settings modal controls
         on(dom.openSettingsBtn, 'click', openSettingsModal);
         on(dom.closeSettingsBtn, 'click', closeSettingsModal);
 
+        // Settings modal steppers & save
         document.querySelectorAll('[data-setting-step]').forEach((btn) => {
           btn.addEventListener('click', () => {
             const [modeKey, deltaStr] = btn.dataset.settingStep.split(':');
@@ -2430,44 +2251,28 @@
           });
         });
 
-        on(dom.intervalMinusBtn, 'click', () => {
-          if (!dom.inputLongInterval) return;
-          dom.inputLongInterval.value = Math.max(2, (parseInt(dom.inputLongInterval.value, 10) || 4) - 1);
-        });
-
-        on(dom.intervalPlusBtn, 'click', () => {
-          if (!dom.inputLongInterval) return;
-          dom.inputLongInterval.value = Math.min(10, (parseInt(dom.inputLongInterval.value, 10) || 4) + 1);
-        });
-
         on(dom.resetDefaultsBtn, 'click', () => {
           if (dom.inputDurFocus) dom.inputDurFocus.value = DEFAULT_DURATIONS.focus;
           if (dom.inputDurShort) dom.inputDurShort.value = DEFAULT_DURATIONS.short;
           if (dom.inputDurLong) dom.inputDurLong.value = DEFAULT_DURATIONS.long;
           if (dom.inputDurLunch) dom.inputDurLunch.value = DEFAULT_DURATIONS.lunch;
-          if (dom.inputLongInterval) dom.inputLongInterval.value = DEFAULT_LONG_INTERVAL;
         });
 
         on(dom.saveSettingsBtn, 'click', () => {
           state.durations.focus = Math.max(1, Math.min(180, parseInt(dom.inputDurFocus?.value, 10) || 25));
           state.durations.short = Math.max(1, Math.min(60, parseInt(dom.inputDurShort?.value, 10) || 5));
           state.durations.long = Math.max(1, Math.min(90, parseInt(dom.inputDurLong?.value, 10) || 15));
-          state.durations.lunch = Math.max(5, Math.min(180, parseInt(dom.inputDurLunch?.value, 10) || 45));
-          state.longRestInterval = Math.max(2, Math.min(10, parseInt(dom.inputLongInterval?.value, 10) || 4));
+          state.durations.lunch = Math.max(5, Math.min(180, parseInt(dom.inputDurLunch?.value, 10) || 60));
 
           saveJSON(STORAGE_KEYS.DURATIONS, state.durations);
-          saveJSON(STORAGE_KEYS.LONG_INTERVAL, state.longRestInterval);
 
-          if (!state.isRunning) {
-            const tInfo = getActiveStructuredTaskState();
-            if (!tInfo.active) {
-              state.totalSeconds = state.durations[state.mode] * 60;
-              state.secondsLeft = state.totalSeconds;
-            }
+          if (!state.isRunning && !state.activeTaskId) {
+            state.totalSeconds = state.durations[state.mode] * 60;
+            state.secondsLeft = state.totalSeconds;
           }
           updateTimerUI();
           closeSettingsModal();
-          showTransitionToast('focus', 'Settings saved');
+          showTransitionToast('focus', 'Durations saved');
         });
 
         // Calendar navigation
@@ -2478,7 +2283,7 @@
           state.selectedDate = getTodayStr();
           renderCalendar();
           renderTasksForSelectedDate();
-          renderActiveTaskCard();
+          renderActiveTaskBadgeAndNavCounter();
         });
 
         on(dom.calPrevBtn, 'click', () => {
@@ -2507,14 +2312,14 @@
           syncReminderToggleUI(e.target.checked);
         });
 
-        // Presets inside task modal ("Workday" and "4hr")
+        // One-tap presets ('Workday' and '4hr')
         dom.presetBtns.forEach((btn) => {
           btn.addEventListener('click', () => {
             applyPresetToDraft(btn.dataset.preset);
           });
         });
 
-        // Quick-add pills inside task modal
+        // Quick-add pills ('+ Focus', '+ Rest', '+ Long', '+ Lunch')
         dom.modalQuickBtns.forEach((btn) => {
           btn.addEventListener('click', () => {
             const m = btn.dataset.modalQuick;
@@ -2524,7 +2329,7 @@
           });
         });
 
-        // Sync custom duration input when dropdown mode changes
+        // Sync duration input when dropdown mode changes
         on(dom.modalBlockModeSelect, 'change', () => {
           const m = dom.modalBlockModeSelect.value;
           if (dom.modalBlockDurInput && state.durations[m]) {
@@ -2532,7 +2337,7 @@
           }
         });
 
-        // Custom add button inside task modal
+        // '+ Add Step' button
         on(dom.modalAddCustomBlockBtn, 'click', () => {
           const m = dom.modalBlockModeSelect ? dom.modalBlockModeSelect.value : 'focus';
           const dur = dom.modalBlockDurInput ? parseInt(dom.modalBlockDurInput.value, 10) : state.durations[m];
@@ -2540,7 +2345,7 @@
           renderModalBlocksList();
         });
 
-        // Save / Update Structured Task form submission
+        // Save / Update Structured Task Form Submission
         on(dom.addTaskForm, 'submit', (e) => {
           e.preventDefault();
           const title = dom.taskTitleInput ? dom.taskTitleInput.value.trim() : '';
@@ -2572,14 +2377,10 @@
               existing.reminded = false;
               existing.blocks = cleanBlocks;
               existing.completed = cleanBlocks.every((b) => b.completed);
-
-              if (state.activeTaskId === existing.id && !state.isRunning) {
-                syncTimerToActiveTaskIfIdle();
-              }
             }
           } else {
             const newTask = {
-              id: 'stask-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+              id: 'task-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
               title,
               date: dateVal,
               reminderEnabled,
@@ -2589,12 +2390,6 @@
               blocks: cleanBlocks,
             };
             state.tasks.unshift(newTask);
-            state.activeTaskId = newTask.id;
-            state.activeBlockId = newTask.blocks[0].id;
-            saveJSON(STORAGE_KEYS.ACTIVE_TASK, state.activeTaskId);
-            if (!state.isRunning) {
-              syncTimerToActiveTaskIfIdle();
-            }
           }
 
           state.selectedDate = dateVal;
@@ -2608,9 +2403,8 @@
           closeAddTaskModal();
           renderCalendar();
           renderTasksForSelectedDate();
-          renderActiveTaskCard();
-          updateTimerUI();
-          showTransitionToast('focus', editingId ? 'Task updated' : 'Structured task saved');
+          renderActiveTaskBadgeAndNavCounter();
+          showTransitionToast('focus', editingId ? 'Task updated' : 'Task scheduled');
         });
 
         // Reminder banner actions
@@ -2618,7 +2412,7 @@
           const targetId = state.activeBannerTaskId;
           hideReminderBanner();
           if (targetId) {
-            runStructuredTask(targetId, false);
+            runStructuredTask(targetId);
           }
         });
 
@@ -2632,6 +2426,60 @@
         on(dom.taskModal, 'click', (e) => {
           if (e.target === dom.taskModal) closeAddTaskModal();
         });
+
+        // Horizontal Touch Swipe Navigation between Timer (#page-timer) and Schedule (#page-schedule)
+        const swipeWorkspace = document.getElementById('swipe-workspace');
+        if (swipeWorkspace) {
+          let touchStartX = 0;
+          let touchStartY = 0;
+          let touchStartTime = 0;
+          let swipeIgnored = false;
+
+          swipeWorkspace.addEventListener(
+            'touchstart',
+            (e) => {
+              if (!e.touches || e.touches.length !== 1) {
+                swipeIgnored = true;
+                return;
+              }
+              const settingsOpen = dom.settingsModal && !dom.settingsModal.classList.contains('hidden');
+              const taskModalOpen = dom.taskModal && !dom.taskModal.classList.contains('hidden');
+              if (settingsOpen || taskModalOpen) {
+                swipeIgnored = true;
+                return;
+              }
+              const target = e.target;
+              if (target && target.closest('input, select, textarea, [draggable="true"], .modal-block-row')) {
+                swipeIgnored = true;
+                return;
+              }
+              swipeIgnored = false;
+              touchStartX = e.touches[0].clientX;
+              touchStartY = e.touches[0].clientY;
+              touchStartTime = Date.now();
+            },
+            { passive: true }
+          );
+
+          swipeWorkspace.addEventListener(
+            'touchend',
+            (e) => {
+              if (swipeIgnored || !e.changedTouches || e.changedTouches.length !== 1) return;
+              const deltaX = e.changedTouches[0].clientX - touchStartX;
+              const deltaY = e.changedTouches[0].clientY - touchStartY;
+              const elapsed = Date.now() - touchStartTime;
+
+              if (elapsed < 700 && Math.abs(deltaX) > 55 && Math.abs(deltaX) > Math.abs(deltaY) * 1.35) {
+                if (deltaX < 0 && state.activeTab === 'timer') {
+                  switchTab('schedule');
+                } else if (deltaX > 0 && state.activeTab === 'schedule') {
+                  switchTab('timer');
+                }
+              }
+            },
+            { passive: true }
+          );
+        }
       }
 
       // =========================================================================
@@ -2646,16 +2494,9 @@
           });
         }
 
-        if (dom.iconSoundOn && dom.iconSoundOff) {
-          dom.iconSoundOn.classList.toggle('hidden', !state.soundEnabled);
-          dom.iconSoundOff.classList.toggle('hidden', state.soundEnabled);
-        }
-
-        updateNotificationBadgeUI();
-        syncTimerToActiveTaskIfIdle();
+        updateNotificationIconUI();
         bindEvents();
         updateTimerUI();
-        renderActiveTaskCard();
         renderCalendar();
         renderTasksForSelectedDate();
 
